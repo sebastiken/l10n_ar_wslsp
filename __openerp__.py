@@ -27,9 +27,11 @@
     "author": "Eynes",
     "description": "AFIP livestock sector liquidation webservice (LSLWS - WSLSP) management",
     "depends": [
-        "base", 
+        "base", "l10n_ar_point_of_sale", "l10n_ar_wsaa",
     ],
     "data": [
+        "data/wslsp_data.xml",
+        "views/wslsp_view.xml",
     ],
     
     "installable": True,

@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+		<!-- ***********************-->
+		<!-- * WSLSP Configuration *-->
+		<!-- ***********************-->
+		<!-- Form View for wslsp.config -->
+		<record id="view_wslsp_config_form" model="ir.ui.view">
+			<field name="name">wslsp.config.form</field>
+			<field name="model">wslsp.config</field>
+			<field name="type">form</field>
+			<field name="arch" type="xml">
+				<form string="Config WSLSP">
+					<sheet>
+						<h1>
+							<field name="name"/>
+						</h1>
+						<group>
+							<field name="company_id" select="1"/>
+							<field name="cuit" select="1"/>
+							<field name="url" select="1"/>
+							<field name="homologation"/>
+						</group>
+						<notebook colspan="4">
+							<page string="Points Of Sale">
+								<field name="point_of_sale_ids" nolabel="1"/>
+							</page>
+							<page string="Participant Character">
+								<field name="participant_character_ids" nolabel="1">
+                                	<tree string="WSLSP Participant Character" editable="top">
+                                    	<field name="name" readonly="1"/>
+                                    	<field name="code" readonly="1"/>
+                                    	<!--field name="currency_id"/-->
+                                	</tree>
+                            	</field>
+                            	<div class="oe_right oe_button_box" name="import_buttons">
+                                	<button name="get_wslsp_participant_characters" type="object" string="Get Participant Characters"/><!-- groups="account.group_account_user"/-->
+                            	</div>
+							</page>
+							<page string="Categories">
+								<field name="categories_ids" nolabel="1">
+                                	<tree string="WSLSP Categories" editable="top">
+                                    	<field name="name" readonly="1"/>
+                                    	<field name="code" readonly="1"/>
+                                    	<!--field name="currency_id"/-->
+                                	</tree>
+                            	</field>
+                            	<div class="oe_right oe_button_box" name="import_buttons">
+                                	<button name="get_wslsp_categories" type="object" string="Get Categories"/><!-- groups="account.group_account_user"/-->
+                            	</div>
+							</page>
+							<page string="Cuts">
+								<field name="cut_ids" nolabel="1">
+                                	<tree string="WSLSP Cuts" editable="top">
+                                    	<field name="name" readonly="1"/>
+                                    	<field name="code" readonly="1"/>
+                                    	<!--field name="currency_id"/-->
+                                	</tree>
+                            	</field>
+                            	<div class="oe_right oe_button_box" name="import_buttons">
+                                	<button name="get_wslsp_cuts" type="object" string="Get Cuts"/><!-- groups="account.group_account_user"/-->
+                            	</div>
+							</page>
+							<page string="Expenses">
+								<field name="expenses_ids" nolabel="1">
+                                	<tree string="WSLSP Expenses" editable="top">
+                                    	<field name="name" readonly="1"/>
+                                    	<field name="code" readonly="1"/>
+                                    	<!--field name="currency_id"/-->
+                                	</tree>
+                            	</field>
+                            	<div class="oe_right oe_button_box" name="import_buttons">
+                                	<button name="get_wslsp_expenses" type="object" string="Get Expenses"/><!-- groups="account.group_account_user"/-->
+                            	</div>
+							</page>
+							<page string="Motives">
+								<field name="motive_ids" nolabel="1">
+                                	<tree string="WSLSP Motives" editable="top">
+                                    	<field name="name" readonly="1"/>
+                                    	<field name="code" readonly="1"/>
+                                    	<!--field name="currency_id"/-->
+                                	</tree>
+                            	</field>
+                            	<div class="oe_right oe_button_box" name="import_buttons">
+                                	<button name="get_wslsp_motives" type="object" string="Get Motives"/><!-- groups="account.group_account_user"/-->
+                            	</div>
+							</page>
+							<page string="Operations">
+								<field name="operation_ids" nolabel="1">
+                                	<tree string="WSLSP Operations" editable="top">
+                                    	<field name="name" readonly="1"/>
+                                    	<field name="code" readonly="1"/>
+                                    	<!--field name="currency_id"/-->
+                                	</tree>
+                            	</field>
+                            	<div class="oe_right oe_button_box" name="import_buttons">
+                                	<button name="get_wslsp_operations" type="object" string="Get Operations"/><!-- groups="account.group_account_user"/-->
+                            	</div>
+							</page>
+							<page string="Provinces">
+								<field name="province_ids" nolabel="1">
+                                	<tree string="WSLSP Provinces" editable="top">
+                                    	<field name="name" readonly="1"/>
+                                    	<field name="code" readonly="1"/>
+                                    	<!--field name="currency_id"/-->
+                                	</tree>
+                            	</field>
+                            	<div class="oe_right oe_button_box" name="import_buttons">
+                                	<button name="get_wslsp_provinces" type="object" string="Get Provinces"/><!-- groups="account.group_account_user"/-->
+                            	</div>
+							</page>
+							<page string="Breeds">
+								<field name="breed_ids" nolabel="1">
+                                	<tree string="WSLSP Breeds" editable="top">
+                                    	<field name="name" readonly="1"/>
+                                    	<field name="code" readonly="1"/>
+                                    	<!--field name="currency_id"/-->
+                                	</tree>
+                            	</field>
+                            	<div class="oe_right oe_button_box" name="import_buttons">
+                                	<button name="get_wslsp_breeds" type="object" string="Get Breeds"/><!-- groups="account.group_account_user"/-->
+                            	</div>
+							</page>
+							<page string="Voucher Types">
+								<field name="voucher_type_ids" nolabel="1">
+                                	<tree string="WSLSP Voucher Types" editable="top">
+                                    	<field name="name" readonly="1"/>
+                                    	<field name="code" readonly="1"/>
+                                    	<!--field name="currency_id"/-->
+                                	</tree>
+                            	</field>
+                            	<div class="oe_right oe_button_box" name="import_buttons">
+                                	<button name="get_wslsp_voucher_types" type="object" string="Get Voucher Types"/><!-- groups="account.group_account_user"/-->
+                            	</div>
+							</page>
+							<page string="Liquidation Types">
+								<field name="liquidation_type_ids" nolabel="1">
+                                	<tree string="WSLSP Liquidation Types" editable="top">
+                                    	<field name="name" readonly="1"/>
+                                    	<field name="code" readonly="1"/>
+                                    	<!--field name="currency_id"/-->
+                                	</tree>
+                            	</field>
+                            	<div class="oe_right oe_button_box" name="import_buttons">
+                                	<button name="get_wslsp_liquidation_types" type="object" string="Get Liquidation Types"/><!-- groups="account.group_account_user"/-->
+                            	</div>
+							</page>
+							<page string="Taxes">
+								<field name="tax_ids" nolabel="1">
+                                	<tree string="WSLSP Taxes" editable="top">
+                                    	<field name="name" readonly="1"/>
+                                    	<field name="code" readonly="1"/>
+                                    	<!--field name="currency_id"/-->
+                                	</tree>
+                            	</field>
+                            	<div class="oe_right oe_button_box" name="import_buttons">
+                                	<button name="get_wslsp_taxes" type="object" string="Get Taxes"/><!-- groups="account.group_account_user"/-->
+                            	</div>
+							</page>
+						</notebook>
+					</sheet>
+				</form>
+			</field>
+		</record>
+
+		<!-- Tree View for electronic_invoice_config -->
+		<record id="view_wslsp_config_tree" model="ir.ui.view">
+			<field name="name">wslsp.config.tree</field>
+			<field name="model">wslsp.config</field>
+			<field name="type">tree</field>
+			<field name="arch" type="xml">
+				<tree string="Config WSLSP">
+					<field name="name"/>
+					<field name="company_id" select="1"/>
+					<field name="cuit" select="1" />
+					<field name="url" select="1" />
+                    <field name="homologation"/>
+				</tree>
+			</field>
+		</record>
+
+		<!--Window Action para wsfex_config-->
+		<record model="ir.actions.act_window" id="action_wslsp_config">
+				<field name="name">WSLSP Config</field>
+				<field name="type">ir.actions.act_window</field>
+				<field name="res_model">wslsp.config</field>
+				<field name="view_type">form</field>
+				<field name="view_mode">tree,form</field>
+		</record>
+
+		<menuitem id="wslsp_config_menu" name="WSLSP Configuration" parent="l10n_ar_wsaa.base_afipws" sequence="16" action="action_wslsp_config"/>
+
+	</data>
+</openerp>

@@ -29,6 +29,9 @@ class Error:
     def __str__(self):
         return '%s (Err. %s)' % (self.msg, self.code)
 
+    def __repr__(self):
+        return '%s (Err. %s)' % (self.msg, self.code)
+
 
 class Event:
 
@@ -52,6 +55,9 @@ class WSLSP:
 
         # Creamos el cliente
         self._create_client(token, sign)
+
+        #TODO move
+        self._resetItemsDetalleLiquidacion()
 
     def _create_client(self, token, sign):
         try:
@@ -363,13 +369,13 @@ class WSLSP:
 
         return res
 
-    def consultarUltimoNroComprobantePorPtoVta(self, puntoVenta = 1, tipoComprobante = 1):
+    def consultarUltimoNroComprobantePorPtoVta(self, puntoVenta = None, tipoComprobante = None):
 
         # Llamamos a la funcion
         arg = self.client.factory.create('ns0:ConsultarUltNroComprobantePorPtoVtaSolicitud')
         #TODO THROW ERROR
-        arg.puntoVenta = puntoVenta if 1 <= puntoVenta <= 99999 else 1
-        arg.tipoComprobante = tipoComprobante if 1 <= tipoComprobante <= 999 else 1
+        arg.puntoVenta = self._get_puntoVenta() or puntoVenta
+        arg.tipoComprobante = self._get_tipoComprobante() or tipoComprobante
         result = self.client.service.consultarUltimoNroComprobantePorPtoVta(self.argauth, arg)
 
         res = {}
@@ -387,14 +393,14 @@ class WSLSP:
 
         return res
 
-    def consultarLiquidacionPorNroComprobante(self, puntoVenta = 1, tipoComprobante = 1, nroComprobante = 1):
+    def consultarLiquidacionPorNroComprobante(self):
 
         # Llamamos a la funcion
         arg = self.client.factory.create('ns0:ConsultarLiquidacionPorNroComprobanteSolicitud')
         #TODO THROW ERROR
-        arg.puntoVenta = puntoVenta if 1 <= puntoVenta <= 99999 else 1
-        arg.tipoComprobante = tipoComprobante if 1 <= tipoComprobante <= 999 else 1
-        arg.nroComprobante = nroComprobante if 1 <= nroComprobante <= 99999999 else 1
+        arg.puntoVenta = self._get_puntoVenta()
+        arg.tipoComprobante = self._get_tipoComprobante()
+        arg.nroComprobante = self._get_nroComprobante()
         result = self.client.service.consultarLiquidacionPorNroComprobante(self.argauth, arg)
 
         res = {}
@@ -413,16 +419,40 @@ class WSLSP:
 
         return res
 
-    def generarAjuste (self, tipoAjuste = 'C', fechaComprobante = '2018-03-26'):
+    def generarAjuste (self, tipoAjuste = "C", fechaComprobante = '2018-03-26'):
         
         # Llamamos a la funcion
         arg = self.client.factory.create('ns0:GenerarAjusteSolicitud')
         #TODO WIP generar ajuste
-        arg.tipoAjuste = 'C' if tipoAjuste == 'C' else 'D'
+
+        #tipoAjuste = self.client.factory.create('ns0:TipoAjuste')
+        #tipoAjuste.value = "C" if tipoAjuste == "C" else "D" 
+        arg.tipoAjuste = tipoAjuste
+        #arg.tipoAjuste = "C" if tipoAjuste == "C" else "D"
         arg.fechaComprobante = fechaComprobante
-        arg.tipoComprobante = tipoComprobante if 1 <= tipoComprobante <= 999 else 1
-        arg.nroComprobante = nroComprobante if 1 <= nroComprobante <= 99999999 else 1
-        result = self.client.service.consultarLiquidacionPorNroComprobante(self.argauth, arg)
+        emisor = self.client.factory.create('ns0:EmisorAjusteSolicitud')
+        emisor.puntoVenta = self._get_puntoVenta()
+        emisor.nroComprobante = self._get_nroComprobante()
+        comprobanteAAjustar = self.client.factory.create('ns0:ComprobanteAAjustar')
+        comprobanteAAjustar.puntoVenta = self._get_puntoVenta() #TODO diff emisor, comprobante
+        comprobanteAAjustar.tipoComprobante = self._get_tipoComprobante()
+        comprobanteAAjustar.nroComprobante = _get_nroComprobante()
+        emisor.comprobanteAAjustar = comprobanteAAjustar
+        arg.emisor = emisor
+        #ajusteFinanciero = self.client.factory.create('ns0:AjusteFinancieroSolicitud')
+        #gasto = self.client.factory.create('ns0:GastoSolicitud')
+        #tributo = self.client.factory.create('ns0:TributoSolicitud')
+
+        # <xsd:complexType name="AjusteFinancieroSolicitud">
+        # <xsd:sequence>
+        # <xsd:element name="gasto" type="tns:GastoSolicitud" maxOccurs="unbounded" minOccurs="0"></xsd:element>
+        # <xsd:element name="tributo" type="tns:TributoSolicitud" maxOccurs="unbounded" minOccurs="0"></xsd:element>
+        # </xsd:sequence>
+        result = self.client.service.generarAjuste(self.argauth, arg)
+
+        # <xsd:element name="itemDetalleAjusteLiquidacion" type="tns:ItemDetalleAjusteSolicitud" maxOccurs="unbounded" minOccurs="0"></xsd:element>
+        # <xsd:element name="ajusteFinanciero" type="tns:AjusteFinancieroSolicitud" maxOccurs="1" minOccurs="0"></xsd:element>
+        # <xsd:element name="datosAdicionales" type="tns:Texto1000" maxOccurs="1" minOccurs="0"></xsd:element>
 
         res = {}
         # Obtenemos Errores y Eventos
@@ -437,6 +467,40 @@ class WSLSP:
         #ONLY ERROR GOTTEN
         if 'nroComprobante' in result:
             res['response'] = result.nroComprobante
+
+        return res
+    
+    def generarLiquidacion(self):
+
+        # Llamamos a la funcion
+        arg = self.client.factory.create('ns0:GenerarLiquidacionSolicitud')
+
+#         <xsd:sequence>
+# <xsd:element name="guia" type="tns:GuiaSolicitud" maxOccurs="unbounded" minOccurs="0"></xsd:element>
+# <xsd:element name="dte" type="tns:DTESolicitud" maxOccurs="unbounded" minOccurs="0"></xsd:element>
+# <xsd:element name="gasto" type="tns:GastoSolicitud" maxOccurs="unbounded" minOccurs="0"></xsd:element>
+# <xsd:element name="tributo" type="tns:TributoSolicitud" maxOccurs="unbounded" minOccurs="0"></xsd:element>
+# <xsd:element name="datosAdicionales" type="tns:Texto1000" maxOccurs="1" minOccurs="0"></xsd:element>
+#         </xsd:sequence>
+
+        arg.codOperacion = self._get_codOperacion()
+        arg.emisor = self._get_emisorSolicitud()
+        arg.receptor = self._get_receptorSolicitud() 
+        arg.datosLiquidacion = self._get_datosLiquidacionSolicitud()
+        arg.itemDetalleLiquidacion = self._get_itemsDetalleLiquidacion()
+        ipdb.set_trace()
+
+        result = self.client.service.generarLiquidacion(self.argauth, arg)
+
+        res = {}
+        # Obtenemos Errores y Eventos
+        errors = self._get_errors(result)
+        if len(errors):
+            res['errors'] = errors
+
+        if 'errors' not in result:
+            res['response'] = result
+        # TODO Check if 500 (pdf)
 
         return res
 
@@ -458,6 +522,9 @@ class WSLSP:
         # OK dummy()
         # generarAjuste(Auth auth, GenerarAjusteSolicitud solicitud, )
         # generarLiquidacion(Auth auth, GenerarLiquidacionSolicitud solicitud, )
+
+        
+
 
     def fe_CAE_solicitar(self, pto_vta, cbte_tipo, detalles):
 
@@ -544,6 +611,326 @@ class WSLSP:
 
         res = {'Comprobantes': comprobantes, 'Errores': errores, 'PtoVta': pto_vta, 'Resultado': result.FeCabResp.Resultado, 'Reproceso': result.FeCabResp.Reproceso}
         return res
+
+    def set_puntoVenta(self, pos):
+        self.puntoVenta = puntoVenta
+
+    def set_tipoComprobante(self, tipoComprobante):
+        self.tipoComprobante = tipoComprobante
+
+    def set_nroComprobante(self, nroComprobante):
+        self.nroComprobante = nroComprobante
+
+    def set_codOperacion(self, codOperacion):
+        self.codOperacion = codOperacion
+
+    def set_emisorSolicitud(self, **kwargs):
+
+        emisor = self.client.factory.create('ns0:EmisorSolicitud')
+        for name,value in kwargs.items():
+            if name == 'puntoVenta':
+                if self._check_puntoVenta(value):
+                    emisor.puntoVenta = value
+                else:
+                    #TODO ERROR
+                    pass
+                continue
+            if name == 'tipoComprobante':
+                if self._check_tipoComprobante(value):
+                    emisor.tipoComprobante = value
+                else:
+                    #TODO ERROR
+                    pass
+                continue
+            if name == 'nroComprobante':
+                if self._check_nroComprobante(value):
+                    emisor.nroComprobante = value
+                else:
+                    #TODO ERROR
+                    pass
+                continue
+            if name == 'codCaracter':
+                if self._check_codCaracter(value):
+                    emisor.codCaracter = value
+                else:
+                    #TODO ERROR
+                    pass
+                continue
+            if name == 'fechaInicioActividades':
+                if self._check_fecha(value):
+                    emisor.fechaInicioActividades = value
+                else:
+                    #TODO ERROR
+                    pass
+                continue
+            if name == 'iibb':
+                if self._check_iibb(value):
+                    emisor.iibb = value
+                else:
+                    #TODO ERROR
+                    pass
+                continue
+            if name == 'nroRUCA':
+                if self._check_nroRUCA(value):
+                    emisor.nroRUCA = value
+                else:
+                    #TODO ERROR
+                    pass
+                continue
+            if name == 'nroRenspa':
+                if self._check_nroRenspa(value):
+                    emisor.nroRenspa = value
+                else:
+                    #TODO ERROR
+                    pass
+                continue
+            if name == 'cuitAutorizado':
+                if self._check_cuit(value):
+                    emisor.cuitAutorizado = value
+                else:
+                    #TODO ERROR
+                    pass
+                continue
+        self.emisorSolicitud = emisor
+
+    def set_receptorSolicitud(self, **kwargs):
+        
+        receptor = self.client.factory.create('ns0:ReceptorSolicitud')
+
+        for name,value in kwargs.items():
+            if name == 'codCaracter':
+                if self._check_codCaracter(value):
+                    receptor.codCaracter = value
+                else:
+                    #TODO ERROR
+                    pass
+                continue
+
+        receptor.operador = None
+        self.receptorSolicitud = receptor
+
+    def set_receptorOperadorSolicitud(self, **kwargs):
+        
+        operador = self.client.factory.create('ns0:ReceptorOperadorSolicitud')
+
+        for name,value in kwargs.items():
+            if name == 'cuit':
+                if self._check_cuit(value):
+                    operador.cuit = value
+                else:
+                    #TODO ERROR
+                    pass
+                continue
+            if name == 'iibb':
+                if self._check_iibb(value):
+                    operador.iibb = value
+                else:
+                    #TODO ERROR
+                    pass
+                continue
+            if name == 'nroRenspa':
+                if self._check_nroRenspa(value):
+                    operador.nroRenspa = value
+                else:
+                    #TODO ERROR
+                    pass
+                continue
+            if name == 'nroRUCA':
+                if self._check_nroRUCA(value):
+                    operador.nroRUCA = value
+                else:
+                    #TODO ERROR
+                    pass
+                continue
+            if name == 'cuitAutorizado':
+                if self._check_cuit(value):
+                    operador.cuitAutorizado = value
+                else:
+                    #TODO ERROR
+                    pass
+                continue
+            
+        self._get_receptorSolicitud().operador = operador
+
+    def set_datosLiquidacionSolicitud(self, **kwargs):
+        datosLiquidacion = self.client.factory.create('ns0:DatosLiquidacionSolicitud')
+        
+        for name,value in kwargs.items():
+            if name == 'fechaComprobante':
+                if self._check_fecha(value):
+                    datosLiquidacion.fechaComprobante = value
+                else:
+                    #TODO ERROR
+                    pass
+                continue
+            if name == 'fechaOperacion':
+                if self._check_fecha(value):
+                    datosLiquidacion.fechaOperacion = value
+                else:
+                    #TODO ERROR
+                    pass
+                continue
+            if name == 'lugarRealizacion':
+                if self._check_lugarRealizacion(value):
+                    datosLiquidacion.lugarRealizacion = value
+                else:
+                    #TODO ERROR
+                    pass
+                continue
+            if name == 'codMotivo':
+                if self._check_codMotivo(value):
+                    datosLiquidacion.codMotivo = value
+                else:
+                    #TODO ERROR
+                    pass
+                continue
+            if name == 'fechaRecepcion':
+                if self._check_fecha(value):
+                    datosLiquidacion.fechaOperacion = value
+                else:
+                    #TODO ERROR
+                    pass
+                continue
+            if name == 'fechaFaena':
+                if self._check_fecha(value):
+                    datosLiquidacion.fechaFaena = value
+                else:
+                    #TODO ERROR
+                    pass
+                continue
+            if name == 'cuit':
+                if self._check_cuit(value):
+                    datosLiquidacion.frigorifico.cuit = value
+                else:
+                    #TODO ERROR
+                    pass
+                continue
+            if name == 'nroPlanta':
+                if self._check_nroPlanta(value):
+                    datosLiquidacion.frigorifico.nroPlanta = value
+                else:
+                    #TODO ERROR
+                    pass
+                continue
+
+            if datosLiquidacion.frigorifico.cuit is None or datosLiquidacion.frigorifico.nroPlanta is None:
+                datosLiquidacion.frigorifico = None
+
+        self.datosLiquidacionSolicitud = datosLiquidacion
+
+    def add_itemDetalleLiquidacion(self, **kwargs):
+        itemDetalleLiquidacion = self.client.factory.create('ns0:ItemDetalleLiquidacionSolicitud')
+
+        keys = ['cuitCliente', 'codCategoria', 'tipoLiquidacion', 'cantidad', 'precioUnitario', 'alicuotaIVA', 'cantidadCabezas', 'nroTropa', 'codCorte', 'cantidadKilovivo', 'precioRecupero', 'raza','tipoIVANulo'] 
+        check_names = ['cuit','codigo']
+        # TODO ADD iterate enumeration keys and check
+        for name,value in kwargs.items():
+            if name in keys:
+                setattr(itemDetalleLiquidacion,name,value)
+
+        if 'tipoIVANulo' not in kwargs:
+            itemDetalleLiquidacion.tipoIVANulo = None
+
+        self.itemsDetalleLiquidacion.append(itemDetalleLiquidacion)
+
+    def new_raza(self, **kwargs):
+        raza = self.client.factory.create('ns0:Raza')
+
+        keys = ['codRaza', 'detalle'] 
+        check_names = ['codigo']
+        # TODO ADD iterate enumeration keys and check
+        for name,value in kwargs.items():
+            if name in keys:
+                setattr(raza,name,value)
+
+        return raza
+
+
+    #TODO REVISE CHECKS
+
+    def _resetItemsDetalleLiquidacion(self):
+        self.itemsDetalleLiquidacion = []
+
+    def _check_puntoVenta(self,value):
+        return 1 <= value <= 99999
+
+    def _check_tipoComprobante(self,value):
+        return 1 <= value <= 999
+
+    def _check_nroComprobante(self,value):
+        return 0 <= value <= 99999999
+
+    def _check_codCaracter(self,value):
+        return 1 <= value <= 99999999
+
+    def _check_fecha(self,value):
+        return True
+        return 1 <= value <= 99999999
+
+    def _check_iibb(self,value):
+        return True
+        return 1 <= value <= 99999999
+
+    def _check_nroRUCA(self,value):
+        return True
+        #Check caracter
+        return 1 <= value <= 99999999
+
+    def _check_nroRenspa(self,value):
+        #Check caracter
+        return True
+        return 1 <= value <= 99999999
+
+    def _check_cuit(self,value):
+        return True
+        return 1 <= value <= 99999999
+
+    def _check_codOperacion(self,value):
+        return 1 <= value <= 99999999
+
+    def _check_codMotivo(self,value):
+        return 1 <= value <= 99999999
+    
+    def _get_puntoVenta(self):
+        if hasattr(self,'puntoVenta') and self._check_puntoVenta(self.puntoVenta):
+            return self.puntoVenta
+        return None
+
+    def _get_tipoComprobante(self):
+        if hasattr(self,'tipoComprobante') and self._check_tipoComprobante(self.tipoComprobante):
+            return self.tipoComprobante
+        return None
+
+    def _get_nroComprobante(self):
+        if hasattr(self,'nroComprobante') and self._check_nroComprobante(self.nroComprobante):
+            return self.nroComprobante
+        return None
+
+    def _get_codOperacion(self):
+        if hasattr(self,'codOperacion') and self._check_codOperacion(self.codOperacion):
+            return self.codOperacion
+        return None
+
+    def _get_emisorSolicitud(self):
+        if hasattr(self,'emisorSolicitud'):
+            return self.emisorSolicitud
+        return None
+
+    def _get_receptorSolicitud(self):
+        if hasattr(self,'receptorSolicitud'):
+            return self.receptorSolicitud
+        return None
+
+    def _get_datosLiquidacionSolicitud(self):
+        if hasattr(self,'datosLiquidacionSolicitud'):
+            return self.datosLiquidacionSolicitud
+        return None
+
+    def _get_itemsDetalleLiquidacion(self):
+        if hasattr(self,'itemsDetalleLiquidacion'):
+            return self.itemsDetalleLiquidacion
+        return []
+
 
 CERT = "/home/work/raf/app/rafaela_addons/l10n_ar_wslsp/a.crt"        # El certificado X.509 obtenido de Seg. Inf.
 PRIVATEKEY = "/home/work/raf/app/rafaela_addons/l10n_ar_wslsp/a.key"  # La clave privada del certificado CERT
@@ -664,35 +1051,16 @@ if __name__ == "__main__":
         print 'consultarUltimoNroComprobantePorPtoVta ' + str(len(wslsp.consultarUltimoNroComprobantePorPtoVta()))
         print 'consultarLiquidacionPorNroComprobante ' + str(len(wslsp.consultarLiquidacionPorNroComprobante()))
         #THIS
-        ipdb.set_trace()
-        print 'generarAjuste ' + str(len(wslsp.generarAjuste()))
-        
+        wslsp.set_codOperacion(4)
+        nroComprobante = wslsp.consultarUltimoNroComprobantePorPtoVta(3000,183)['response']+1
+        wslsp.set_emisorSolicitud(puntoVenta = 3000, tipoComprobante = 183, nroComprobante = nroComprobante, codCaracter=1, fechaInicioActividades="2018-03-20",nroRenspa="21.123.4.56789/A4")
+        wslsp.set_receptorSolicitud(codCaracter=1)
+        wslsp.set_receptorOperadorSolicitud(cuit=30160000011,nroRenspa="21.123.4.56789/A4")
+        #TODO cod motivo checks
+        wslsp.set_datosLiquidacionSolicitud(fechaComprobante="2018-04-06", fechaOperacion = "2018-04-06", codMotivo=2, fechaRecepcion="2018-04-06")
+        raza = wslsp.new_raza(codRaza = 1)
+        wslsp.add_itemDetalleLiquidacion(cuitCliente = 20160000199, codCategoria = 1202, tipoLiquidacion = 2, cantidad = 15, cantidadCabezas = 15, precioUnitario = 50.200, alicuotaIVA=10.5, raza = raza)
 
-#    wsaa = WSAA()
-#    wsfe = WSFE(wsaa, CUIT)
-#    wsfe.print_services()
-#    #wsfe.fe_recupera_last_CMP_request(1, 1)
-#    #wsfe.fe_ult_nro_request()
-#    #wsfe.fe_dummy()
-#    wsfe.fe_aut_request([])
-# #    #wsfe.fe_recuperar_qty()
-#             FECAEAConsultar(FEAuthRequest Auth, xs:int Periodo, xs:short Orden, )
-#             FECAEARegInformativo(FEAuthRequest Auth, FECAEARequest FeCAEARegInfReq, )
-#             FECAEASinMovimientoConsultar(FEAuthRequest Auth, xs:string CAEA, xs:int PtoVta, )
-#             FECAEASinMovimientoInformar(FEAuthRequest Auth, xs:int PtoVta, xs:string CAEA, )
-#             FECAEASolicitar(FEAuthRequest Auth, xs:int Periodo, xs:short Orden, )
-#             FECAESolicitar(FEAuthRequest Auth, FECAERequest FeCAEReq, )
-#             FECompConsultar(FEAuthRequest Auth, FECompConsultaReq FeCompConsReq, )
-#             FECompTotXRequest(FEAuthRequest Auth, )
-#             FECompUltimoAutorizado(FEAuthRequest Auth, xs:int PtoVta, xs:int CbteTipo, )
-#             FEDummy()
-#             FEParamGetCotizacion(FEAuthRequest Auth, xs:string MonId, )
-#             FEParamGetPtosVenta(FEAuthRequest Auth, )
-#             FEParamGetTiposCbte(FEAuthRequest Auth, )
-#             FEParamGetTiposConcepto(FEAuthRequest Auth, )
-#             FEParamGetTiposDoc(FEAuthRequest Auth, )
-#             FEParamGetTiposIva(FEAuthRequest Auth, )
-#             FEParamGetTiposMonedas(FEAuthRequest Auth, )
-#             FEParamGetTiposOpcional(FEAuthRequest Auth, )
-#             FEParamGetTiposPaises(FEAuthRequest Auth, )
-#             FEParamGetTiposTributos(FEAuthRequest Auth, )
+        print 'generarLiquidacion ' + str(len(wslsp.generarLiquidacion()))
+
+        #print 'generarAjuste ' + str(len(wslsp.generarAjuste()))
