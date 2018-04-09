@@ -58,6 +58,10 @@ class WSLSP:
 
         #TODO move
         self._resetItemsDetalleLiquidacion()
+        self._resetGuias()
+        self._resetDTE()
+        self._resetGastos()
+        self._resetTributos()
 
     def _create_client(self, token, sign):
         try:
@@ -476,10 +480,6 @@ class WSLSP:
         arg = self.client.factory.create('ns0:GenerarLiquidacionSolicitud')
 
 #         <xsd:sequence>
-# <xsd:element name="guia" type="tns:GuiaSolicitud" maxOccurs="unbounded" minOccurs="0"></xsd:element>
-# <xsd:element name="dte" type="tns:DTESolicitud" maxOccurs="unbounded" minOccurs="0"></xsd:element>
-# <xsd:element name="gasto" type="tns:GastoSolicitud" maxOccurs="unbounded" minOccurs="0"></xsd:element>
-# <xsd:element name="tributo" type="tns:TributoSolicitud" maxOccurs="unbounded" minOccurs="0"></xsd:element>
 # <xsd:element name="datosAdicionales" type="tns:Texto1000" maxOccurs="1" minOccurs="0"></xsd:element>
 #         </xsd:sequence>
 
@@ -488,6 +488,11 @@ class WSLSP:
         arg.receptor = self._get_receptorSolicitud() 
         arg.datosLiquidacion = self._get_datosLiquidacionSolicitud()
         arg.itemDetalleLiquidacion = self._get_itemsDetalleLiquidacion()
+        arg.guia = self._get_guia()
+        arg.dte = self._get_dte()
+        arg.gasto = self._get_gasto()
+        arg.tributo = self._get_tributo()
+        arg.datosAdicionales = self._get_datosAdicionales()
         ipdb.set_trace()
 
         result = self.client.service.generarLiquidacion(self.argauth, arg)
@@ -521,96 +526,7 @@ class WSLSP:
         # OK consultarUltimoNroComprobantePorPtoVta(Auth auth, ConsultarUltNroComprobantePorPtoVtaSolicitud solicitud, )
         # OK dummy()
         # generarAjuste(Auth auth, GenerarAjusteSolicitud solicitud, )
-        # generarLiquidacion(Auth auth, GenerarLiquidacionSolicitud solicitud, )
-
-        
-
-
-    def fe_CAE_solicitar(self, pto_vta, cbte_tipo, detalles):
-
-        argcaereq = self.client.factory.create('ns0:FECAERequest')
-        # print argcaereq
-
-        # FECAECabRequest
-        argcaereq.FeCabReq.CantReg = len(detalles)
-        argcaereq.FeCabReq.PtoVta = pto_vta
-        argcaereq.FeCabReq.CbteTipo = cbte_tipo
-
-        for detalle in detalles:
-            arrayIva = []
-            arrayTributos = []
-
-            argdetreq = self.client.factory.create('ns0:FECAEDetRequest')
-
-            for k, v in detalle.iteritems():
-                if isinstance(v, list):
-                    if k == 'Iva':
-                        for iva in v:
-                            argiva = self.client.factory.create('ns0:AlicIva')
-                            for k, v in iva.iteritems():
-                                if k in argiva:
-                                    argiva[k] = v
-                                else:
-                                    argiva[k] = None
-
-                            arrayIva.append(argiva)
-                            continue
-                    elif k == 'Tributos':
-                        for trib in v:
-                            argtrib = self.client.factory.create('ns0:Tributo')
-                            for k, v in trib.iteritems():
-                                if k in argtrib:
-                                    argtrib[k] = v
-                                else:
-                                    argtrib[k] = None
-
-                            arrayTributos.append(argtrib)
-                            continue
-                else:
-                    if k in argdetreq:
-                        argdetreq[k] = v
-                    # else:
-                        #argdetreq[k] = None
-
-            if len(arrayIva):
-                argdetreq.Iva.AlicIva.append(arrayIva)
-            if len(arrayTributos):
-                argdetreq.Tributos.Tributo.append(arrayTributos)
-            argcaereq.FeDetReq.FECAEDetRequest.append(argdetreq)
-
-        result = self.client.service.FECAESolicitar(self.argauth, argcaereq)
-
-        errores = []
-        comprobantes = []
-
-        if 'Errors' in result:
-            for e in result.Errors.Err:
-                error = '%s (Err. %s)' % (e.Msg, e.Code)
-                errores.append(error)
-
-        for det_response in result.FeDetResp.FECAEDetResponse:
-            observaciones = []
-            comp = {}
-
-            if 'Observaciones' in det_response:
-                for o in det_response.Observaciones.Obs:
-                    observacion = '%s (Err. %s)' % (o.Msg, o.Code)
-                    observaciones.append(observacion)
-
-            comp['Concepto'] = det_response.Concepto
-            comp['DocTipo'] = det_response.DocTipo
-            comp['DocNro'] = det_response.DocNro
-            comp['CbteDesde'] = det_response.CbteDesde
-            comp['CbteHasta'] = det_response.CbteHasta
-            comp['CbteFch'] = det_response.CbteFch
-            comp['Resultado'] = det_response.Resultado
-            comp['CAE'] = det_response.CAE
-            comp['CAEFchVto'] = det_response.CAEFchVto
-            comp['Observaciones'] = observaciones
-            comprobantes.append(comp)
-
-        res = {'Comprobantes': comprobantes, 'Errores': errores, 'PtoVta': pto_vta, 'Resultado': result.FeCabResp.Resultado, 'Reproceso': result.FeCabResp.Reproceso}
-        return res
+        # OK generarLiquidacion(Auth auth, GenerarLiquidacionSolicitud solicitud, )
 
     def set_puntoVenta(self, pos):
         self.puntoVenta = puntoVenta
@@ -624,197 +540,62 @@ class WSLSP:
     def set_codOperacion(self, codOperacion):
         self.codOperacion = codOperacion
 
+    def set_datosAdicionales(self, datosAdicionales):
+        self.datosAdicionales = datosAdicionales
+
     def set_emisorSolicitud(self, **kwargs):
 
         emisor = self.client.factory.create('ns0:EmisorSolicitud')
+        keys = ['puntoVenta','tipoComprobante','nroComprobante','codCaracter','fechaInicioActividades','iibb','nroRUCA','nroRenspa','cuitAutorizado']
+        
+        # TODO ADD iterate enumeration keys and check
         for name,value in kwargs.items():
-            if name == 'puntoVenta':
-                if self._check_puntoVenta(value):
-                    emisor.puntoVenta = value
-                else:
-                    #TODO ERROR
-                    pass
-                continue
-            if name == 'tipoComprobante':
-                if self._check_tipoComprobante(value):
-                    emisor.tipoComprobante = value
-                else:
-                    #TODO ERROR
-                    pass
-                continue
-            if name == 'nroComprobante':
-                if self._check_nroComprobante(value):
-                    emisor.nroComprobante = value
-                else:
-                    #TODO ERROR
-                    pass
-                continue
-            if name == 'codCaracter':
-                if self._check_codCaracter(value):
-                    emisor.codCaracter = value
-                else:
-                    #TODO ERROR
-                    pass
-                continue
-            if name == 'fechaInicioActividades':
-                if self._check_fecha(value):
-                    emisor.fechaInicioActividades = value
-                else:
-                    #TODO ERROR
-                    pass
-                continue
-            if name == 'iibb':
-                if self._check_iibb(value):
-                    emisor.iibb = value
-                else:
-                    #TODO ERROR
-                    pass
-                continue
-            if name == 'nroRUCA':
-                if self._check_nroRUCA(value):
-                    emisor.nroRUCA = value
-                else:
-                    #TODO ERROR
-                    pass
-                continue
-            if name == 'nroRenspa':
-                if self._check_nroRenspa(value):
-                    emisor.nroRenspa = value
-                else:
-                    #TODO ERROR
-                    pass
-                continue
-            if name == 'cuitAutorizado':
-                if self._check_cuit(value):
-                    emisor.cuitAutorizado = value
-                else:
-                    #TODO ERROR
-                    pass
-                continue
+            if name in keys:
+                setattr(emisor,name,value)
+
         self.emisorSolicitud = emisor
 
     def set_receptorSolicitud(self, **kwargs):
-        
         receptor = self.client.factory.create('ns0:ReceptorSolicitud')
-
+        
+        keys = ['codCaracter','operador',]
+        check_names = ['cuit','codigo']
+        # TODO ADD iterate enumeration keys and check
         for name,value in kwargs.items():
-            if name == 'codCaracter':
-                if self._check_codCaracter(value):
-                    receptor.codCaracter = value
-                else:
-                    #TODO ERROR
-                    pass
-                continue
+            if name in keys:
+                setattr(receptor,name,value)
 
-        receptor.operador = None
+        if 'operador' not in kwargs:
+            datosLiquidacion.operador = None
+
         self.receptorSolicitud = receptor
 
-    def set_receptorOperadorSolicitud(self, **kwargs):
+    def new_receptorOperadorSolicitud(self, **kwargs):
         
         operador = self.client.factory.create('ns0:ReceptorOperadorSolicitud')
+        
+        keys = ['cuit','iibb','nroRenspa','nroRUCA','cuitAutorizado']
+        check_names = ['cuit','codigo']
 
+        # TODO ADD iterate enumeration keys and check
         for name,value in kwargs.items():
-            if name == 'cuit':
-                if self._check_cuit(value):
-                    operador.cuit = value
-                else:
-                    #TODO ERROR
-                    pass
-                continue
-            if name == 'iibb':
-                if self._check_iibb(value):
-                    operador.iibb = value
-                else:
-                    #TODO ERROR
-                    pass
-                continue
-            if name == 'nroRenspa':
-                if self._check_nroRenspa(value):
-                    operador.nroRenspa = value
-                else:
-                    #TODO ERROR
-                    pass
-                continue
-            if name == 'nroRUCA':
-                if self._check_nroRUCA(value):
-                    operador.nroRUCA = value
-                else:
-                    #TODO ERROR
-                    pass
-                continue
-            if name == 'cuitAutorizado':
-                if self._check_cuit(value):
-                    operador.cuitAutorizado = value
-                else:
-                    #TODO ERROR
-                    pass
-                continue
-            
-        self._get_receptorSolicitud().operador = operador
+            if name in keys:
+                setattr(operador,name,value)
+
+        return operador
 
     def set_datosLiquidacionSolicitud(self, **kwargs):
         datosLiquidacion = self.client.factory.create('ns0:DatosLiquidacionSolicitud')
         
+        keys = ['fechaComprobante','fechaOperacion','lugarRealizacion','codMotivo','fechaRecepcion','fechaFaena','cuit','nroPlanta','frigorifico']
+        check_names = ['cuit','codigo']
+        # TODO ADD iterate enumeration keys and check
         for name,value in kwargs.items():
-            if name == 'fechaComprobante':
-                if self._check_fecha(value):
-                    datosLiquidacion.fechaComprobante = value
-                else:
-                    #TODO ERROR
-                    pass
-                continue
-            if name == 'fechaOperacion':
-                if self._check_fecha(value):
-                    datosLiquidacion.fechaOperacion = value
-                else:
-                    #TODO ERROR
-                    pass
-                continue
-            if name == 'lugarRealizacion':
-                if self._check_lugarRealizacion(value):
-                    datosLiquidacion.lugarRealizacion = value
-                else:
-                    #TODO ERROR
-                    pass
-                continue
-            if name == 'codMotivo':
-                if self._check_codMotivo(value):
-                    datosLiquidacion.codMotivo = value
-                else:
-                    #TODO ERROR
-                    pass
-                continue
-            if name == 'fechaRecepcion':
-                if self._check_fecha(value):
-                    datosLiquidacion.fechaOperacion = value
-                else:
-                    #TODO ERROR
-                    pass
-                continue
-            if name == 'fechaFaena':
-                if self._check_fecha(value):
-                    datosLiquidacion.fechaFaena = value
-                else:
-                    #TODO ERROR
-                    pass
-                continue
-            if name == 'cuit':
-                if self._check_cuit(value):
-                    datosLiquidacion.frigorifico.cuit = value
-                else:
-                    #TODO ERROR
-                    pass
-                continue
-            if name == 'nroPlanta':
-                if self._check_nroPlanta(value):
-                    datosLiquidacion.frigorifico.nroPlanta = value
-                else:
-                    #TODO ERROR
-                    pass
-                continue
+            if name in keys:
+                setattr(datosLiquidacion,name,value)
 
-            if datosLiquidacion.frigorifico.cuit is None or datosLiquidacion.frigorifico.nroPlanta is None:
-                datosLiquidacion.frigorifico = None
+        if 'frigorifico' not in kwargs:
+            datosLiquidacion.frigorifico = None
 
         self.datosLiquidacionSolicitud = datosLiquidacion
 
@@ -845,11 +626,73 @@ class WSLSP:
 
         return raza
 
+    def add_Gasto(self, **kwargs):
+        gasto = self.client.factory.create('ns0:GastoSolicitud')
+
+        keys = ['codGasto', 'descripcion', 'baseImponible', 'importe', 'alicuotaIVA', 'alicuota', 'tipoIVANulo'] 
+        check_names = ['codigo']
+        # TODO ADD iterate enumeration keys and check
+        for name,value in kwargs.items():
+            if name in keys:
+                setattr(gasto,name,value)
+
+        if 'tipoIVANulo' not in kwargs:
+            gasto.tipoIVANulo = None
+
+        self.gastos.append(gasto)
+
+    def add_DTE(self, **kwargs):
+        dte = self.client.factory.create('ns0:DTESolicitud')
+
+        keys = ['nroDTE', 'nroRenspa'] 
+        check_names = ['codigo']
+        # TODO ADD iterate enumeration keys and check
+        for name,value in kwargs.items():
+            if name in keys:
+                setattr(dte,name,value)
+
+        self.DTE.append(dte)
+
+    def add_Guia(self, **kwargs):
+        guia = self.client.factory.create('ns0:GuiaSolicitud')
+
+        keys = ['nroGuia'] 
+        check_names = ['codigo']
+        # TODO ADD iterate enumeration keys and check
+        for name,value in kwargs.items():
+            if name in keys:
+                setattr(guia,name,value)
+
+        self.guias.append(guia)
+
+    def add_Tributo(self, **kwargs):
+        tributo = self.client.factory.create('ns0:TributoSolicitud')
+
+        keys = ['codTributo', 'descripcion', 'baseImponible','alicuota','importe'] 
+        check_names = ['codigo']
+        # TODO ADD iterate enumeration keys and check
+        for name,value in kwargs.items():
+            if name in keys:
+                setattr(tributo,name,value)
+
+        self.tributos.append(tributo)
 
     #TODO REVISE CHECKS
 
     def _resetItemsDetalleLiquidacion(self):
         self.itemsDetalleLiquidacion = []
+
+    def _resetDTE(self):
+        self.DTE = []
+    
+    def _resetGastos(self):
+        self.gastos = []
+    
+    def _resetGuias(self):
+        self.guias = []
+
+    def _resetTributos(self):
+        self.tributos = []
 
     def _check_puntoVenta(self,value):
         return 1 <= value <= 99999
@@ -926,9 +769,34 @@ class WSLSP:
             return self.datosLiquidacionSolicitud
         return None
 
+    def _get_datosAdicionales(self):
+        if hasattr(self,'datosAdicionales'):
+            return self.datosAdicionales
+        return None
+
     def _get_itemsDetalleLiquidacion(self):
         if hasattr(self,'itemsDetalleLiquidacion'):
             return self.itemsDetalleLiquidacion
+        return []
+
+    def _get_dte(self):
+        if hasattr(self,'DTE'):
+            return self.DTE
+        return []
+
+    def _get_guia(self):
+        if hasattr(self,'guias'):
+            return self.guias
+        return []
+
+    def _get_gasto(self):
+        if hasattr(self,'gastos'):
+            return self.gastos
+        return []
+
+    def _get_tributo(self):
+        if hasattr(self,'tributos'):
+            return self.tributos
         return []
 
 
@@ -1054,12 +922,17 @@ if __name__ == "__main__":
         wslsp.set_codOperacion(4)
         nroComprobante = wslsp.consultarUltimoNroComprobantePorPtoVta(3000,183)['response']+1
         wslsp.set_emisorSolicitud(puntoVenta = 3000, tipoComprobante = 183, nroComprobante = nroComprobante, codCaracter=1, fechaInicioActividades="2018-03-20",nroRenspa="21.123.4.56789/A4")
-        wslsp.set_receptorSolicitud(codCaracter=1)
-        wslsp.set_receptorOperadorSolicitud(cuit=30160000011,nroRenspa="21.123.4.56789/A4")
+        operador = wslsp.new_receptorOperadorSolicitud(cuit=30160000011,nroRenspa="21.123.4.56789/A4")
+        wslsp.set_receptorSolicitud(codCaracter=1, operador=operador)
         #TODO cod motivo checks
-        wslsp.set_datosLiquidacionSolicitud(fechaComprobante="2018-04-06", fechaOperacion = "2018-04-06", codMotivo=2, fechaRecepcion="2018-04-06")
+        wslsp.set_datosLiquidacionSolicitud(fechaComprobante="2018-04-06", fechaOperacion = "2018-04-06", codMotivo=2)
         raza = wslsp.new_raza(codRaza = 1)
         wslsp.add_itemDetalleLiquidacion(cuitCliente = 20160000199, codCategoria = 1202, tipoLiquidacion = 2, cantidad = 15, cantidadCabezas = 15, precioUnitario = 50.200, alicuotaIVA=10.5, raza = raza)
+        wslsp.add_Gasto(codGasto = 4, importe = 415.15, alicuotaIVA=10.5)
+        wslsp.add_DTE(nroDTE = "123456789-2")
+        wslsp.add_Guia(nroGuia = "1253")
+        wslsp.add_Guia(nroGuia = "125354")
+        wslsp.add_Tributo(codTributo = 1, importe = 12.53)
 
         print 'generarLiquidacion ' + str(len(wslsp.generarLiquidacion()))
 
