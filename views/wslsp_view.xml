@@ -39,13 +39,7 @@
                             	</div>
 							</page>
 							<page string="Categories">
-								<field name="categories_ids" nolabel="1">
-                                	<tree string="WSLSP Categories" editable="top">
-                                    	<field name="name" readonly="1"/>
-                                    	<field name="code" readonly="1"/>
-                                    	<!--field name="currency_id"/-->
-                                	</tree>
-                            	</field>
+								<field name="categories_ids" nolabel="1"/>
                             	<div class="oe_right oe_button_box" name="import_buttons">
                                 	<button name="get_wslsp_categories" type="object" string="Get Categories"/><!-- groups="account.group_account_user"/-->
                             	</div>
@@ -63,13 +57,7 @@
                             	</div>
 							</page>
 							<page string="Expenses">
-								<field name="expenses_ids" nolabel="1">
-                                	<tree string="WSLSP Expenses" editable="top">
-                                    	<field name="name" readonly="1"/>
-                                    	<field name="code" readonly="1"/>
-                                    	<!--field name="currency_id"/-->
-                                	</tree>
-                            	</field>
+								<field name="expenses_ids" nolabel="1"/>
                             	<div class="oe_right oe_button_box" name="import_buttons">
                                 	<button name="get_wslsp_expenses" type="object" string="Get Expenses"/><!-- groups="account.group_account_user"/-->
                             	</div>

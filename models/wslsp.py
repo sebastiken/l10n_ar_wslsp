@@ -78,7 +78,7 @@ class WSLSPConfig(models.Model):
 
         ids = self.search([('company_id','=',company_id)])
         if not ids:
-            raise osv.except_osv(_('WSFEX Config Error!'), _('There is no WSFEX configuration set to this company'))
+            raise osv.except_osv(_('WSLSP Config Error!'), _('There is no WSLSP configuration set to this company'))
 
         return ids
 
@@ -87,8 +87,8 @@ class WSLSPConfig(models.Model):
         conf = self
         token, sign = conf.wsaa_ticket_id.get_token_sign()
 
-        _wsfe = wsfe(conf.cuit, token, sign, conf.url)
-        res = _wsfe.fe_dummy()
+        _wslsp = wslsp(conf.cuit, token, sign, conf.url)
+        res = _wslsp.dummy()
         return res
 
     @api.one
@@ -380,20 +380,6 @@ class WSLSPConfig(models.Model):
         last = res['response']
         return last
 
-    @api.multi
-    def get_invoice_CAE(self, pos, voucher_type, details):
-        conf = self
-        token, sign = conf.wsaa_ticket_id.get_token_sign()
-
-        _wsfex = wsfex(conf.cuit, token, sign, conf.url)
-
-        # Agregamos la info que falta
-        details['Tipo_cbte'] = voucher_type
-        details['Punto_vta'] = pos
-        res = _wsfex.FEXAuthorize(details)
-
-        return res
-
     def _parse_result(self, invoices, result):
 
         invoices_approbed = {}
@@ -587,4 +573,30 @@ class WSLSPConfig(models.Model):
 
             if Cmps_asoc:
                 Cmp['Cmps_Asoc'] = Cmps_asoc
+
         return Cmp
+
+    def get_liquidation(self, purchase_data):
+        company = self.env.user.company_id
+
+        token, sign = self.wsaa_ticket_id.get_token_sign()
+
+        _wslsp = wslsp(self.cuit, token, sign, self.url)
+
+        _wslsp.set_codOperacion(purchase_data['operationCode'])
+        _wslsp.set_emisorSolicitud(purchase_data['emisor']) #nroComprobante
+        _wslsp.set_receptorSolicitud(purchase_data['receptor']) #operador
+        _wslsp.set_datosLiquidacionSolicitud(purchase_data['datosLiquidacion'])
+        for itemDetalleLiquidacion in purchase_data['itemDetalleLiquidacion']:
+            _wslsp.add_itemDetalleLiquidacion(itemDetalleLiquidacion) #raza
+        for gasto in purchase_data['gastos']:
+            _wslsp.add_Gasto(gasto)
+        for dte in purchase_data['dtes']:
+            _wslsp.add_DTE(dte)
+        for guia in purchase_data['guias']:
+            _wslsp.add_Guia(guia)
+        for tributo in purchase_data['tributos']:
+            _wslsp.add_Tributo(tributo)
+
+        res = _wslsp.generarLiquidacion()
+        return res

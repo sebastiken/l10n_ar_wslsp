@@ -493,7 +493,7 @@ class WSLSP:
         arg.gasto = self._get_gasto()
         arg.tributo = self._get_tributo()
         arg.datosAdicionales = self._get_datosAdicionales()
-        ipdb.set_trace()
+        #import ipdb;ipdb.set_trace()
 
         result = self.client.service.generarLiquidacion(self.argauth, arg)
 
@@ -507,7 +507,14 @@ class WSLSP:
             res['response'] = result
         # TODO Check if 500 (pdf)
 
-        return res
+        return {
+            'cae' : result.cabecera['cae'],
+            'cae_due_date' : result.cabecera['fechaVencimientoCae'],
+            'nroComprobante' : result.emisor['nroComprobante'],
+            'pdf' : result.pdf,
+            'summary' : result.resumenTotales,
+        }
+
 
         # OK consultarCaracteresParticipante(Auth auth, )
         # OK consultarCategorias(Auth auth, )
@@ -543,34 +550,38 @@ class WSLSP:
     def set_datosAdicionales(self, datosAdicionales):
         self.datosAdicionales = datosAdicionales
 
-    def set_emisorSolicitud(self, **kwargs):
+    def set_emisorSolicitud(self, dictt):
 
         emisor = self.client.factory.create('ns0:EmisorSolicitud')
+        #TODO consultarUltim... can have no 'response'
+        dictt['nroComprobante'] = self.consultarUltimoNroComprobantePorPtoVta(puntoVenta = dictt['puntoVenta'], tipoComprobante = dictt['tipoComprobante'])['response'] + 1 
         keys = ['puntoVenta','tipoComprobante','nroComprobante','codCaracter','fechaInicioActividades','iibb','nroRUCA','nroRenspa','cuitAutorizado']
         
         # TODO ADD iterate enumeration keys and check
-        for name,value in kwargs.items():
+        for name,value in dictt.items():
             if name in keys:
                 setattr(emisor,name,value)
 
         self.emisorSolicitud = emisor
 
-    def set_receptorSolicitud(self, **kwargs):
+    def set_receptorSolicitud(self, dictt):
         receptor = self.client.factory.create('ns0:ReceptorSolicitud')
         
         keys = ['codCaracter','operador',]
+        if 'operador' in dictt:
+            dictt['operador'] = self.new_receptorOperadorSolicitud(dictt['operador'])
         check_names = ['cuit','codigo']
         # TODO ADD iterate enumeration keys and check
-        for name,value in kwargs.items():
+        for name,value in dictt.items():
             if name in keys:
                 setattr(receptor,name,value)
 
-        if 'operador' not in kwargs:
+        if 'operador' not in dictt:
             datosLiquidacion.operador = None
 
         self.receptorSolicitud = receptor
 
-    def new_receptorOperadorSolicitud(self, **kwargs):
+    def new_receptorOperadorSolicitud(self, dictt):
         
         operador = self.client.factory.create('ns0:ReceptorOperadorSolicitud')
         
@@ -578,100 +589,105 @@ class WSLSP:
         check_names = ['cuit','codigo']
 
         # TODO ADD iterate enumeration keys and check
-        for name,value in kwargs.items():
+        for name,value in dictt.items():
             if name in keys:
                 setattr(operador,name,value)
 
         return operador
 
-    def set_datosLiquidacionSolicitud(self, **kwargs):
+    def set_datosLiquidacionSolicitud(self, dictt):
         datosLiquidacion = self.client.factory.create('ns0:DatosLiquidacionSolicitud')
         
         keys = ['fechaComprobante','fechaOperacion','lugarRealizacion','codMotivo','fechaRecepcion','fechaFaena','cuit','nroPlanta','frigorifico']
         check_names = ['cuit','codigo']
         # TODO ADD iterate enumeration keys and check
-        for name,value in kwargs.items():
+        for name,value in dictt.items():
             if name in keys:
                 setattr(datosLiquidacion,name,value)
 
-        if 'frigorifico' not in kwargs:
+        #TODO frigorifico
+        if 'frigorifico' not in dictt:
             datosLiquidacion.frigorifico = None
 
         self.datosLiquidacionSolicitud = datosLiquidacion
 
-    def add_itemDetalleLiquidacion(self, **kwargs):
+    def add_itemDetalleLiquidacion(self, dictt):
         itemDetalleLiquidacion = self.client.factory.create('ns0:ItemDetalleLiquidacionSolicitud')
+
+        if 'raza' in dictt:
+            dictt['raza'] = self.new_raza(dictt['raza'])
 
         keys = ['cuitCliente', 'codCategoria', 'tipoLiquidacion', 'cantidad', 'precioUnitario', 'alicuotaIVA', 'cantidadCabezas', 'nroTropa', 'codCorte', 'cantidadKilovivo', 'precioRecupero', 'raza','tipoIVANulo'] 
         check_names = ['cuit','codigo']
         # TODO ADD iterate enumeration keys and check
-        for name,value in kwargs.items():
+        for name,value in dictt.items():
             if name in keys:
                 setattr(itemDetalleLiquidacion,name,value)
 
-        if 'tipoIVANulo' not in kwargs:
+        #TODO tipoIVANulo
+        if 'tipoIVANulo' not in dictt:
             itemDetalleLiquidacion.tipoIVANulo = None
 
         self.itemsDetalleLiquidacion.append(itemDetalleLiquidacion)
 
-    def new_raza(self, **kwargs):
+    def new_raza(self, dictt):
         raza = self.client.factory.create('ns0:Raza')
 
         keys = ['codRaza', 'detalle'] 
         check_names = ['codigo']
         # TODO ADD iterate enumeration keys and check
-        for name,value in kwargs.items():
+        for name,value in dictt.items():
             if name in keys:
                 setattr(raza,name,value)
 
         return raza
 
-    def add_Gasto(self, **kwargs):
+    def add_Gasto(self, dictt):
         gasto = self.client.factory.create('ns0:GastoSolicitud')
 
         keys = ['codGasto', 'descripcion', 'baseImponible', 'importe', 'alicuotaIVA', 'alicuota', 'tipoIVANulo'] 
         check_names = ['codigo']
         # TODO ADD iterate enumeration keys and check
-        for name,value in kwargs.items():
+        for name,value in dictt.items():
             if name in keys:
                 setattr(gasto,name,value)
 
-        if 'tipoIVANulo' not in kwargs:
+        if 'tipoIVANulo' not in dictt:
             gasto.tipoIVANulo = None
 
         self.gastos.append(gasto)
 
-    def add_DTE(self, **kwargs):
+    def add_DTE(self, dictt):
         dte = self.client.factory.create('ns0:DTESolicitud')
 
         keys = ['nroDTE', 'nroRenspa'] 
         check_names = ['codigo']
         # TODO ADD iterate enumeration keys and check
-        for name,value in kwargs.items():
+        for name,value in dictt.items():
             if name in keys:
                 setattr(dte,name,value)
 
         self.DTE.append(dte)
 
-    def add_Guia(self, **kwargs):
+    def add_Guia(self, dictt):
         guia = self.client.factory.create('ns0:GuiaSolicitud')
 
         keys = ['nroGuia'] 
         check_names = ['codigo']
         # TODO ADD iterate enumeration keys and check
-        for name,value in kwargs.items():
+        for name,value in dictt.items():
             if name in keys:
                 setattr(guia,name,value)
 
         self.guias.append(guia)
 
-    def add_Tributo(self, **kwargs):
+    def add_Tributo(self, dictt):
         tributo = self.client.factory.create('ns0:TributoSolicitud')
 
         keys = ['codTributo', 'descripcion', 'baseImponible','alicuota','importe'] 
         check_names = ['codigo']
         # TODO ADD iterate enumeration keys and check
-        for name,value in kwargs.items():
+        for name,value in dictt.items():
             if name in keys:
                 setattr(tributo,name,value)
 
@@ -887,7 +903,30 @@ if __name__ == "__main__":
     #print 'Expiration Time: ', expiration_time.strftime("%d/%m/%Y %H:%M:%S")
     
 
-    if args.mode == 'A':
+    if args.mode == 'T':
+        wslsp = WSLSP(cuit = CUIT, token = wsaa.token, sign = wsaa.sign)
+        #wslsp.print_services()
+        wslsp.dummy()
+        ipdb.set_trace()
+    if args.mode == 'TL':
+        wslsp = WSLSP(cuit = CUIT, token = wsaa.token, sign = wsaa.sign)
+        #wslsp.print_services()
+        wslsp.dummy()
+        ipdb.set_trace()
+
+        wslsp.set_codOperacion(4)
+        wslsp.set_emisorSolicitud({"puntoVenta" : 3000, "tipoComprobante" : 183, "codCaracter" : 1, "fechaInicioActividades":"2018-03-20","nroRenspa":"21.123.4.56789/A4"})
+        wslsp.set_receptorSolicitud({"codCaracter":1, "operador":{"cuit":30160000011,"nroRenspa":"21.123.4.56789/A4"}})
+        #TODO cod motivo checks
+        wslsp.set_datosLiquidacionSolicitud({"fechaComprobante":"2018-04-06", "fechaOperacion" : "2018-04-06", "codMotivo":2})
+        wslsp.add_itemDetalleLiquidacion({"cuitCliente" : 20160000199, "codCategoria" : 1202, "tipoLiquidacion" : 2, "cantidad" : 15, "cantidadCabezas" : 15, "precioUnitario" : 50.200, "alicuotaIVA":10.5, "raza" : {"codRaza" : 22}})
+        wslsp.add_Gasto({"codGasto" : 4, "importe" : 415.15, "alicuotaIVA":10.5})
+        wslsp.add_DTE({"nroDTE" : "123456789-2"})
+        wslsp.add_Guia({"nroGuia" : "125354"})
+        wslsp.add_Tributo({"codTributo" : 1, "importe" : 12.53})
+
+        print 'generarLiquidacion ' + str(len(wslsp.generarLiquidacion()))
+    elif args.mode == 'A':
 
         wsfe = WSFEv1(cuit = CUIT, token = wsaa.token, sign = wsaa.sign)
         #wsfe.print_services()
@@ -920,19 +959,16 @@ if __name__ == "__main__":
         print 'consultarLiquidacionPorNroComprobante ' + str(len(wslsp.consultarLiquidacionPorNroComprobante()))
         #THIS
         wslsp.set_codOperacion(4)
-        nroComprobante = wslsp.consultarUltimoNroComprobantePorPtoVta(3000,183)['response']+1
-        wslsp.set_emisorSolicitud(puntoVenta = 3000, tipoComprobante = 183, nroComprobante = nroComprobante, codCaracter=1, fechaInicioActividades="2018-03-20",nroRenspa="21.123.4.56789/A4")
-        operador = wslsp.new_receptorOperadorSolicitud(cuit=30160000011,nroRenspa="21.123.4.56789/A4")
-        wslsp.set_receptorSolicitud(codCaracter=1, operador=operador)
+        wslsp.set_emisorSolicitud({"puntoVenta" : 3000, "tipoComprobante" : 183, "codCaracter" : 1, "fechaInicioActividades":"2018-03-20","nroRenspa":"21.123.4.56789/A4"})
+        wslsp.set_receptorSolicitud({"codCaracter":1, "operador":{"cuit":30160000011,"nroRenspa":"21.123.4.56789/A4"}})
         #TODO cod motivo checks
-        wslsp.set_datosLiquidacionSolicitud(fechaComprobante="2018-04-06", fechaOperacion = "2018-04-06", codMotivo=2)
-        raza = wslsp.new_raza(codRaza = 1)
-        wslsp.add_itemDetalleLiquidacion(cuitCliente = 20160000199, codCategoria = 1202, tipoLiquidacion = 2, cantidad = 15, cantidadCabezas = 15, precioUnitario = 50.200, alicuotaIVA=10.5, raza = raza)
-        wslsp.add_Gasto(codGasto = 4, importe = 415.15, alicuotaIVA=10.5)
-        wslsp.add_DTE(nroDTE = "123456789-2")
-        wslsp.add_Guia(nroGuia = "1253")
-        wslsp.add_Guia(nroGuia = "125354")
-        wslsp.add_Tributo(codTributo = 1, importe = 12.53)
+        wslsp.set_datosLiquidacionSolicitud({"fechaComprobante":"2018-04-06", "fechaOperacion" : "2018-04-06", "codMotivo":2})
+        wslsp.add_itemDetalleLiquidacion({"cuitCliente" : 20160000199, "codCategoria" : 1202, "tipoLiquidacion" : 2, "cantidad" : 15, "cantidadCabezas" : 15, "precioUnitario" : 50.200, "alicuotaIVA":10.5, "raza" : {"codRaza" : 22}})
+        wslsp.add_Gasto({"codGasto" : 4, "importe" : 415.15, "alicuotaIVA":10.5})
+        wslsp.add_Gasto({"codGasto" : 4, "baseImponible" : 415.15, "alicuota" : 20.15, "alicuotaIVA":10.5})
+        wslsp.add_DTE({"nroDTE" : "123456789-2"})
+        wslsp.add_Guia({"nroGuia" : "125354"})
+        wslsp.add_Tributo({"codTributo" : 1, "importe" : 12.53})
 
         print 'generarLiquidacion ' + str(len(wslsp.generarLiquidacion()))
 
