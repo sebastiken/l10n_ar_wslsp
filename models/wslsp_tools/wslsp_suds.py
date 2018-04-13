@@ -5,6 +5,7 @@ from datetime import datetime
 import urllib2
 
 import logging
+import re
 
 # Direcciones de los servicios web
 WSLSP_URL_HOMO = "https://fwshomo.afip.gov.ar/wslsp/LspService?wsdl"
@@ -18,6 +19,76 @@ logging.getLogger('suds.client').setLevel(logging.INFO)
 logging.getLogger('suds.transport').setLevel(logging.INFO)
 logging.getLogger('suds.xsd.schema').setLevel(logging.INFO)
 logging.getLogger('suds.wsdl').setLevel(logging.INFO)
+
+
+#TODO REVISE CHECKS    
+
+def _no_check(value):
+    return True
+
+def _check_short(value):
+    return -32768 <= value <= 32767
+
+def _check_int(llen = 0):
+    
+    if llen > 0:
+        def f(value):
+            return 0 < value < 10**llen
+    else:
+        def f(value):
+            return -2147483648 <= value <= 2147483647
+
+    return f
+
+def _check_long(llen = 0):
+    
+    if llen > 0:
+        def f(value):
+            return 0 < value < 10**llen
+    else:
+        def f(value):
+            return -9223372036854775808 <= value <= 9223372036854775807
+
+    return f
+
+def _check_cuit():
+    return _check_long(11)
+
+def _check_string(llen = 0):
+    
+    if llen > 0:
+        def f(value):
+            return len(value) <= llen
+    else:
+        def f(value):
+            #?
+            return -2147483648 <= value <= 2147483647
+
+    return f
+
+def _check_regex(regex):
+    def f(value):
+        return re.match(regex,value)
+    return f
+
+def _check_date():
+    return _check_regex("([12]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]))")
+
+def _check_decimal(intt,comma,signed=False):
+    def f(value):
+        return True
+        value_r = ceil(value*10**comma)*10**(-comma)
+        return 0.0 < value < 10.0**(int)-1.0/(10**comma)
+    return f
+
+def _check_amount():
+    return _check_decimal(13,3)
+
+def _check_quantity():
+    return _check_int(5)
+
+def _check_alicuotaIVA(value):
+    return str(value) == "10.5" or str(value) == "21"
 
 
 class Error:
@@ -557,10 +628,13 @@ class WSLSP:
         dictt['nroComprobante'] = self.consultarUltimoNroComprobantePorPtoVta(puntoVenta = dictt['puntoVenta'], tipoComprobante = dictt['tipoComprobante'])['response'] + 1 
         keys = ['puntoVenta','tipoComprobante','nroComprobante','codCaracter','fechaInicioActividades','iibb','nroRUCA','nroRenspa','cuitAutorizado']
         
-        # TODO ADD iterate enumeration keys and check
         for name,value in dictt.items():
             if name in keys:
-                setattr(emisor,name,value)
+                if self._check(name,value):
+                    setattr(emisor,name,value)
+                else:
+                    #TODO ERROR
+                    pass
 
         self.emisorSolicitud = emisor
 
@@ -570,11 +644,13 @@ class WSLSP:
         keys = ['codCaracter','operador',]
         if 'operador' in dictt:
             dictt['operador'] = self.new_receptorOperadorSolicitud(dictt['operador'])
-        check_names = ['cuit','codigo']
-        # TODO ADD iterate enumeration keys and check
         for name,value in dictt.items():
             if name in keys:
-                setattr(receptor,name,value)
+                if self._check(name,value):
+                    setattr(receptor,name,value)
+                else:
+                    #TODO ERROR
+                    pass
 
         if 'operador' not in dictt:
             datosLiquidacion.operador = None
@@ -586,12 +662,14 @@ class WSLSP:
         operador = self.client.factory.create('ns0:ReceptorOperadorSolicitud')
         
         keys = ['cuit','iibb','nroRenspa','nroRUCA','cuitAutorizado']
-        check_names = ['cuit','codigo']
 
-        # TODO ADD iterate enumeration keys and check
         for name,value in dictt.items():
             if name in keys:
-                setattr(operador,name,value)
+                if self._check(name,value):
+                    setattr(operador,name,value)
+                else:
+                    #TODO ERROR
+                    pass
 
         return operador
 
@@ -599,11 +677,14 @@ class WSLSP:
         datosLiquidacion = self.client.factory.create('ns0:DatosLiquidacionSolicitud')
         
         keys = ['fechaComprobante','fechaOperacion','lugarRealizacion','codMotivo','fechaRecepcion','fechaFaena','cuit','nroPlanta','frigorifico']
-        check_names = ['cuit','codigo']
-        # TODO ADD iterate enumeration keys and check
+        
         for name,value in dictt.items():
             if name in keys:
-                setattr(datosLiquidacion,name,value)
+                if self._check(name,value):
+                    setattr(datosLiquidacion,name,value)
+                else:
+                    #TODO ERROR
+                    pass
 
         #TODO frigorifico
         if 'frigorifico' not in dictt:
@@ -618,11 +699,13 @@ class WSLSP:
             dictt['raza'] = self.new_raza(dictt['raza'])
 
         keys = ['cuitCliente', 'codCategoria', 'tipoLiquidacion', 'cantidad', 'precioUnitario', 'alicuotaIVA', 'cantidadCabezas', 'nroTropa', 'codCorte', 'cantidadKilovivo', 'precioRecupero', 'raza','tipoIVANulo'] 
-        check_names = ['cuit','codigo']
-        # TODO ADD iterate enumeration keys and check
         for name,value in dictt.items():
             if name in keys:
-                setattr(itemDetalleLiquidacion,name,value)
+                if self._check(name,value):
+                    setattr(itemDetalleLiquidacion,name,value)
+                else:
+                    #TODO ERROR
+                    pass
 
         #TODO tipoIVANulo
         if 'tipoIVANulo' not in dictt:
@@ -634,11 +717,13 @@ class WSLSP:
         raza = self.client.factory.create('ns0:Raza')
 
         keys = ['codRaza', 'detalle'] 
-        check_names = ['codigo']
-        # TODO ADD iterate enumeration keys and check
         for name,value in dictt.items():
             if name in keys:
-                setattr(raza,name,value)
+                if self._check(name,value):
+                    setattr(raza,name,value)
+                else:
+                    #TODO ERROR
+                    pass
 
         return raza
 
@@ -646,11 +731,13 @@ class WSLSP:
         gasto = self.client.factory.create('ns0:GastoSolicitud')
 
         keys = ['codGasto', 'descripcion', 'baseImponible', 'importe', 'alicuotaIVA', 'alicuota', 'tipoIVANulo'] 
-        check_names = ['codigo']
-        # TODO ADD iterate enumeration keys and check
         for name,value in dictt.items():
             if name in keys:
-                setattr(gasto,name,value)
+                if self._check(name,value):
+                    setattr(gasto,name,value)
+                else:
+                    #TODO ERROR
+                    pass
 
         if 'tipoIVANulo' not in dictt:
             gasto.tipoIVANulo = None
@@ -661,23 +748,27 @@ class WSLSP:
         dte = self.client.factory.create('ns0:DTESolicitud')
 
         keys = ['nroDTE', 'nroRenspa'] 
-        check_names = ['codigo']
-        # TODO ADD iterate enumeration keys and check
         for name,value in dictt.items():
             if name in keys:
-                setattr(dte,name,value)
+                if self._check(name,value):
+                    setattr(dte,name,value)
+                else:
+                    #TODO ERROR
+                    pass
 
         self.DTE.append(dte)
 
     def add_Guia(self, dictt):
         guia = self.client.factory.create('ns0:GuiaSolicitud')
 
-        keys = ['nroGuia'] 
-        check_names = ['codigo']
-        # TODO ADD iterate enumeration keys and check
+        keys = ['nroGuia']
         for name,value in dictt.items():
             if name in keys:
-                setattr(guia,name,value)
+                if self._check(name,value):
+                    setattr(guia,name,value)
+                else:
+                    #TODO ERROR
+                    pass
 
         self.guias.append(guia)
 
@@ -685,15 +776,16 @@ class WSLSP:
         tributo = self.client.factory.create('ns0:TributoSolicitud')
 
         keys = ['codTributo', 'descripcion', 'baseImponible','alicuota','importe'] 
-        check_names = ['codigo']
-        # TODO ADD iterate enumeration keys and check
+        
         for name,value in dictt.items():
             if name in keys:
-                setattr(tributo,name,value)
+                if self._check(name,value):
+                    setattr(tributo,name,value)
+                else:
+                    #TODO ERROR
+                    pass
 
         self.tributos.append(tributo)
-
-    #TODO REVISE CHECKS
 
     def _resetItemsDetalleLiquidacion(self):
         self.itemsDetalleLiquidacion = []
@@ -710,63 +802,75 @@ class WSLSP:
     def _resetTributos(self):
         self.tributos = []
 
-    def _check_puntoVenta(self,value):
-        return 1 <= value <= 99999
+    CHECK_FUNC_DICT = {
+        'codCaracter': _check_short,
+        'codCategoria': _check_short, 
+        'codCorte': _check_short, 
+        'codGasto': _check_short, 
+        'codOperacion': _check_short,
+        'codMotivo': _check_short,
+        'codRaza': _check_short, 
+        'codTributo': _check_short,
+        'tipoComprobante': _check_short,
+        'tipoLiquidacion': _check_short, 
+        'nroComprobante': _check_int(8),
+        'nroPlanta': _check_int(7),
+        'puntoVenta': _check_int(5),
+        'nroRUCA': _check_long(10),
+        'nroTropa': _check_long(10), 
+        'descripcion': _check_string(80), 
+        'detalle': _check_string(90),
+        'iibb': _check_string(15),
+        'lugarRealizacion': _check_string(50),
+        'nroGuia': _check_string(50),
+        'precioRecupero': _check_decimal(13,3), 
+        'cuit': _check_cuit(),
+        'cuitAutorizado': _check_cuit(),
+        'cuitCliente': _check_cuit(), 
+        'fechaComprobante': _check_date(),
+        'fechaFaena': _check_date(),
+        'fechaInicioActividades': _check_date(),
+        'fechaOperacion': _check_date(),
+        'fechaRecepcion': _check_date(),
+        'cantidad': _check_quantity(), 
+        'cantidadCabezas': _check_quantity(), 
+        'cantidadKilovivo': _check_quantity(), 
+        'baseImponible': _check_amount(), 
+        'importe': _check_amount(), 
+        'precioUnitario': _check_amount(), 
+        'alicuota': _check_decimal(intt = 2, comma = 3, signed = True), 
+        'nroDTE': _check_regex("\d{1,9}[-]\d{1}"),
+        'nroRenspa': _check_regex("(0[0-9]|1[0-9]|2[0-3])[.]\d{3}[.]\d{1}.\d{5}[/]\w{2}"),
+        'alicuotaIVA': _check_alicuotaIVA, 
+        'frigorifico': _no_check,
+        'operador': _no_check,
+        'tipoIVANulo': _no_check,
+        'raza': _no_check,
+    }
 
-    def _check_tipoComprobante(self,value):
-        return 1 <= value <= 999
+    def _check(self,name,value):
+        if name in self.CHECK_FUNC_DICT:
+            return self.CHECK_FUNC_DICT[name](value)
+        else:
+            return False
 
-    def _check_nroComprobante(self,value):
-        return 0 <= value <= 99999999
-
-    def _check_codCaracter(self,value):
-        return 1 <= value <= 99999999
-
-    def _check_fecha(self,value):
-        return True
-        return 1 <= value <= 99999999
-
-    def _check_iibb(self,value):
-        return True
-        return 1 <= value <= 99999999
-
-    def _check_nroRUCA(self,value):
-        return True
-        #Check caracter
-        return 1 <= value <= 99999999
-
-    def _check_nroRenspa(self,value):
-        #Check caracter
-        return True
-        return 1 <= value <= 99999999
-
-    def _check_cuit(self,value):
-        return True
-        return 1 <= value <= 99999999
-
-    def _check_codOperacion(self,value):
-        return 1 <= value <= 99999999
-
-    def _check_codMotivo(self,value):
-        return 1 <= value <= 99999999
-    
     def _get_puntoVenta(self):
-        if hasattr(self,'puntoVenta') and self._check_puntoVenta(self.puntoVenta):
+        if hasattr(self,'puntoVenta'):
             return self.puntoVenta
         return None
 
     def _get_tipoComprobante(self):
-        if hasattr(self,'tipoComprobante') and self._check_tipoComprobante(self.tipoComprobante):
+        if hasattr(self,'tipoComprobante'):
             return self.tipoComprobante
         return None
 
     def _get_nroComprobante(self):
-        if hasattr(self,'nroComprobante') and self._check_nroComprobante(self.nroComprobante):
+        if hasattr(self,'nroComprobante'):
             return self.nroComprobante
         return None
 
     def _get_codOperacion(self):
-        if hasattr(self,'codOperacion') and self._check_codOperacion(self.codOperacion):
+        if hasattr(self,'codOperacion'):
             return self.codOperacion
         return None
 
