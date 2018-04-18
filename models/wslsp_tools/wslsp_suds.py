@@ -76,9 +76,14 @@ def _check_date():
 
 def _check_decimal(intt,comma,signed=False):
     def f(value):
-        return True
-        value_r = ceil(value*10**comma)*10**(-comma)
-        return 0.0 < value < 10.0**(int)-1.0/(10**comma)
+        try:
+            decimal_str = "{0:f}".format(value)
+            if signed:
+                return _check_regex("-?([1-9]\d{1,%d}|0).\d{%d}0{%d}" % (intt-1,comma,6-comma))(decimal_str)
+            else:
+                return _check_regex("([1-9]\d{1,%d}|0).\d{%d}0{%d}" % (intt-1,comma,6-comma))(decimal_str)
+        except ValueError as e:
+            return False
     return f
 
 def _check_amount():
