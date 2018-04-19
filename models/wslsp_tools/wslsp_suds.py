@@ -21,7 +21,7 @@ logging.getLogger('suds.xsd.schema').setLevel(logging.INFO)
 logging.getLogger('suds.wsdl').setLevel(logging.INFO)
 
 
-#TODO REVISE CHECKS    
+#CHECKS
 
 def _no_check(value):
     return True
@@ -165,14 +165,6 @@ class WSLSP:
                 errors.append(error)
         return errors
 
-    def _get_events(self, result):
-        events = []
-        if 'Events' in result:
-            for event in result.Events.Evt:
-                event = Event(event.codigo, event.descripcion)
-                events.append(event)
-        return events
-
     def print_services(self):
         if self.connected:
             print self.client
@@ -193,14 +185,10 @@ class WSLSP:
         result = self.client.service.consultarCaracteresParticipante(self.argauth)
 
         res = {}
-        # Obtenemos Errores y Eventos
+        # Obtenemos Errores
         errors = self._get_errors(result)
         if len(errors):
             res['errors'] = errors
-
-        events = self._get_events(result)
-        if len(events):
-            res['events'] = events
 
         if 'caracter' in result:
             res['response'] = result.caracter
@@ -213,14 +201,10 @@ class WSLSP:
         result = self.client.service.consultarCategorias(self.argauth)
 
         res = {}
-        # Obtenemos Errores y Eventos
+        # Obtenemos Errores
         errors = self._get_errors(result)
         if len(errors):
             res['errors'] = errors
-
-        events = self._get_events(result)
-        if len(events):
-            res['events'] = events
 
         if 'categoria' in result:
             res['response'] = result.categoria
@@ -233,14 +217,10 @@ class WSLSP:
         result = self.client.service.consultarCortes(self.argauth)
 
         res = {}
-        # Obtenemos Errores y Eventos
+        # Obtenemos Errores
         errors = self._get_errors(result)
         if len(errors):
             res['errors'] = errors
-
-        events = self._get_events(result)
-        if len(events):
-            res['events'] = events
 
         if 'corte' in result:
             res['response'] = result.corte
@@ -253,14 +233,10 @@ class WSLSP:
         result = self.client.service.consultarGastos(self.argauth)
 
         res = {}
-        # Obtenemos Errores y Eventos
+        # Obtenemos Errores
         errors = self._get_errors(result)
         if len(errors):
             res['errors'] = errors
-
-        events = self._get_events(result)
-        if len(events):
-            res['events'] = events
 
         if 'gasto' in result:
             res['response'] = result.gasto
@@ -273,14 +249,10 @@ class WSLSP:
         result = self.client.service.consultarMotivos(self.argauth)
 
         res = {}
-        # Obtenemos Errores y Eventos
+        # Obtenemos Errores
         errors = self._get_errors(result)
         if len(errors):
             res['errors'] = errors
-
-        events = self._get_events(result)
-        if len(events):
-            res['events'] = events
 
         if 'motivo' in result:
             res['response'] = result.motivo
@@ -293,14 +265,10 @@ class WSLSP:
         result = self.client.service.consultarOperaciones(self.argauth)
 
         res = {}
-        # Obtenemos Errores y Eventos
+        # Obtenemos Errores
         errors = self._get_errors(result)
         if len(errors):
             res['errors'] = errors
-
-        events = self._get_events(result)
-        if len(events):
-            res['events'] = events
 
         if 'operacion' in result:
             res['response'] = result.operacion
@@ -313,14 +281,10 @@ class WSLSP:
         result = self.client.service.consultarProvincias(self.argauth)
 
         res = {}
-        # Obtenemos Errores y Eventos
+        # Obtenemos Errores
         errors = self._get_errors(result)
         if len(errors):
             res['errors'] = errors
-
-        events = self._get_events(result)
-        if len(events):
-            res['events'] = events
 
         if 'provincia' in result:
             res['response'] = result.provincia
@@ -328,6 +292,8 @@ class WSLSP:
         return res
 
     def consultarPuntosVenta(self):
+
+        #codProvincia = self._get_puntoVenta()
 
         # Llamamos a la funcion
         result = self.client.service.consultarPuntosVenta(self.argauth,1)
@@ -337,10 +303,6 @@ class WSLSP:
         errors = self._get_errors(result)
         if len(errors):
             res['errors'] = errors
-
-        events = self._get_events(result)
-        if len(events):
-            res['events'] = events
 
         if 'puntoVenta' in result:
             res['response'] = result.puntoVenta
@@ -353,14 +315,10 @@ class WSLSP:
         result = self.client.service.consultarRazas(self.argauth)
 
         res = {}
-        # Obtenemos Errores y Eventos
+        # Obtenemos Errores
         errors = self._get_errors(result)
         if len(errors):
             res['errors'] = errors
-
-        events = self._get_events(result)
-        if len(events):
-            res['events'] = events
 
         if 'raza' in result:
             res['response'] = result.raza
@@ -373,14 +331,10 @@ class WSLSP:
         result = self.client.service.consultarTiposComprobante(self.argauth)
 
         res = {}
-        # Obtenemos Errores y Eventos
+        # Obtenemos Errores
         errors = self._get_errors(result)
         if len(errors):
             res['errors'] = errors
-
-        events = self._get_events(result)
-        if len(events):
-            res['events'] = events
 
         if 'tipoComprobante' in result:
             res['response'] = result.tipoComprobante
@@ -393,14 +347,10 @@ class WSLSP:
         result = self.client.service.consultarTiposLiquidacion(self.argauth)
 
         res = {}
-        # Obtenemos Errores y Eventos
+        # Obtenemos Errores
         errors = self._get_errors(result)
         if len(errors):
             res['errors'] = errors
-
-        events = self._get_events(result)
-        if len(events):
-            res['events'] = events
 
         if 'tipoLiquidacion' in result:
             res['response'] = result.tipoLiquidacion
@@ -413,60 +363,48 @@ class WSLSP:
         result = self.client.service.consultarTributos(self.argauth)
 
         res = {}
-        # Obtenemos Errores y Eventos
+        # Obtenemos Errores
         errors = self._get_errors(result)
         if len(errors):
             res['errors'] = errors
-
-        events = self._get_events(result)
-        if len(events):
-            res['events'] = events
 
         if 'tributo' in result:
             res['response'] = result.tributo
 
         return res
 
-    def consultarLocalidadesPorProvincia(self, codProvincia = 1):
+    def consultarLocalidadesPorProvincia(self):
 
         # Llamamos a la funcion
         arg = self.client.factory.create('ns0:ConsultarLocalidadesPorProvinciaSolicitud')
-        arg.codProvincia = codProvincia
+        arg.codProvincia = wslsp._get_codProvincia()
         result = self.client.service.consultarLocalidadesPorProvincia(self.argauth, arg)
 
         res = {}
-        # Obtenemos Errores y Eventos
+        # Obtenemos Errores
         errors = self._get_errors(result)
         if len(errors):
             res['errors'] = errors
-
-        events = self._get_events(result)
-        if len(events):
-            res['events'] = events
 
         if 'localidad' in result:
             res['response'] = result.localidad
 
         return res
 
-    def consultarUltimoNroComprobantePorPtoVta(self, puntoVenta = None, tipoComprobante = None):
+    def consultarUltimoNroComprobantePorPtoVta(self):
 
         # Llamamos a la funcion
         arg = self.client.factory.create('ns0:ConsultarUltNroComprobantePorPtoVtaSolicitud')
         #TODO THROW ERROR
-        arg.puntoVenta = self._get_puntoVenta() or puntoVenta
-        arg.tipoComprobante = self._get_tipoComprobante() or tipoComprobante
+        arg.puntoVenta = self._get_puntoVenta()
+        arg.tipoComprobante = self._get_tipoComprobante()
         result = self.client.service.consultarUltimoNroComprobantePorPtoVta(self.argauth, arg)
 
         res = {}
-        # Obtenemos Errores y Eventos
+        # Obtenemos Errores
         errors = self._get_errors(result)
         if len(errors):
             res['errors'] = errors
-
-        events = self._get_events(result)
-        if len(events):
-            res['events'] = events
 
         if 'nroComprobante' in result:
             res['response'] = result.nroComprobante
@@ -484,14 +422,10 @@ class WSLSP:
         result = self.client.service.consultarLiquidacionPorNroComprobante(self.argauth, arg)
 
         res = {}
-        # Obtenemos Errores y Eventos
+        # Obtenemos Errores
         errors = self._get_errors(result)
         if len(errors):
             res['errors'] = errors
-
-        events = self._get_events(result)
-        if len(events):
-            res['events'] = events
 
         #ONLY ERROR GOTTEN
         if 'nroComprobante' in result:
@@ -499,7 +433,7 @@ class WSLSP:
 
         return res
 
-    def generarAjuste (self, tipoAjuste = "C", fechaComprobante = '2018-03-26'):
+    def generarAjuste (self):
         
         # Llamamos a la funcion
         arg = self.client.factory.create('ns0:GenerarAjusteSolicitud')
@@ -507,42 +441,20 @@ class WSLSP:
 
         #tipoAjuste = self.client.factory.create('ns0:TipoAjuste')
         #tipoAjuste.value = "C" if tipoAjuste == "C" else "D" 
-        arg.tipoAjuste = tipoAjuste
-        #arg.tipoAjuste = "C" if tipoAjuste == "C" else "D"
-        arg.fechaComprobante = fechaComprobante
-        emisor = self.client.factory.create('ns0:EmisorAjusteSolicitud')
-        emisor.puntoVenta = self._get_puntoVenta()
-        emisor.nroComprobante = self._get_nroComprobante()
-        comprobanteAAjustar = self.client.factory.create('ns0:ComprobanteAAjustar')
-        comprobanteAAjustar.puntoVenta = self._get_puntoVenta() #TODO diff emisor, comprobante
-        comprobanteAAjustar.tipoComprobante = self._get_tipoComprobante()
-        comprobanteAAjustar.nroComprobante = _get_nroComprobante()
-        emisor.comprobanteAAjustar = comprobanteAAjustar
-        arg.emisor = emisor
-        #ajusteFinanciero = self.client.factory.create('ns0:AjusteFinancieroSolicitud')
-        #gasto = self.client.factory.create('ns0:GastoSolicitud')
-        #tributo = self.client.factory.create('ns0:TributoSolicitud')
+        arg.tipoAjuste = self._get_tipoAjuste()
+        arg.fechaComprobante = self._get_fechaComprobante()
+        arg.emisor = self._get_emisorAjusteSolicitud() #TODO
+        arg.itemDetalleAjusteLiquidacion = self._get_itemsDetalleAjusteLiquidacion() #TODO
+        arg.ajusteFinanciero = self._get_ajusteFinancieroSolicitud() #TODO
+        arg.datosAdicionales = self._get_datosAdicionales() #TODO
 
-        # <xsd:complexType name="AjusteFinancieroSolicitud">
-        # <xsd:sequence>
-        # <xsd:element name="gasto" type="tns:GastoSolicitud" maxOccurs="unbounded" minOccurs="0"></xsd:element>
-        # <xsd:element name="tributo" type="tns:TributoSolicitud" maxOccurs="unbounded" minOccurs="0"></xsd:element>
-        # </xsd:sequence>
         result = self.client.service.generarAjuste(self.argauth, arg)
-
-        # <xsd:element name="itemDetalleAjusteLiquidacion" type="tns:ItemDetalleAjusteSolicitud" maxOccurs="unbounded" minOccurs="0"></xsd:element>
-        # <xsd:element name="ajusteFinanciero" type="tns:AjusteFinancieroSolicitud" maxOccurs="1" minOccurs="0"></xsd:element>
-        # <xsd:element name="datosAdicionales" type="tns:Texto1000" maxOccurs="1" minOccurs="0"></xsd:element>
 
         res = {}
         # Obtenemos Errores y Eventos
         errors = self._get_errors(result)
         if len(errors):
             res['errors'] = errors
-
-        events = self._get_events(result)
-        if len(events):
-            res['events'] = events
 
         #ONLY ERROR GOTTEN
         if 'nroComprobante' in result:
@@ -554,10 +466,6 @@ class WSLSP:
 
         # Llamamos a la funcion
         arg = self.client.factory.create('ns0:GenerarLiquidacionSolicitud')
-
-#         <xsd:sequence>
-# <xsd:element name="datosAdicionales" type="tns:Texto1000" maxOccurs="1" minOccurs="0"></xsd:element>
-#         </xsd:sequence>
 
         arg.codOperacion = self._get_codOperacion()
         arg.emisor = self._get_emisorSolicitud()
@@ -591,40 +499,40 @@ class WSLSP:
             'summary' : result.resumenTotales,
         }
 
+    # Setters
 
-        # OK consultarCaracteresParticipante(Auth auth, )
-        # OK consultarCategorias(Auth auth, )
-        # OK consultarCortes(Auth auth, )
-        # OK consultarGastos(Auth auth, )
-        # ?  consultarLiquidacionPorNroComprobante(Auth auth, ConsultarLiquidacionPorNroComprobanteSolicitud solicitud, )
-        # OK consultarLocalidadesPorProvincia(Auth auth, ConsultarLocalidadesPorProvinciaSolicitud solicitud, )
-        # OK consultarMotivos(Auth auth, )
-        # OK consultarOperaciones(Auth auth, )
-        # OK consultarProvincias(Auth auth, )
-        # OK consultarPuntosVenta(Auth auth, )
-        # OK consultarRazas(Auth auth, )
-        # OK consultarTiposComprobante(Auth auth, )
-        # OK consultarTiposLiquidacion(Auth auth, )
-        # OK consultarTributos(Auth auth, )
-        # OK consultarUltimoNroComprobantePorPtoVta(Auth auth, ConsultarUltNroComprobantePorPtoVtaSolicitud solicitud, )
-        # OK dummy()
-        # generarAjuste(Auth auth, GenerarAjusteSolicitud solicitud, )
-        # OK generarLiquidacion(Auth auth, GenerarLiquidacionSolicitud solicitud, )
+    def set_field(self,name,value):
+        if self._check(name,value):
+            setattr(self,name,value)
+        else:
+            #TODO ERROR
+            pass        
 
     def set_puntoVenta(self, pos):
-        self.puntoVenta = puntoVenta
+        self.set_field('puntoVenta',pos)
 
     def set_tipoComprobante(self, tipoComprobante):
-        self.tipoComprobante = tipoComprobante
+        self.set_field('tipoComprobante',tipoComprobante)
 
     def set_nroComprobante(self, nroComprobante):
-        self.nroComprobante = nroComprobante
+        self.set_field('nroComprobante',nroComprobante)
+
+    def set_fechaComprobante(self, fechaComprobante):
+        self.set_field('fechaComprobante',fechaComprobante)
 
     def set_codOperacion(self, codOperacion):
-        self.codOperacion = codOperacion
+        self.set_field('codOperacion',codOperacion)
+
+    def set_codProvincia(self, codProvincia):
+        self.set_field('codProvincia',codProvincia)
 
     def set_datosAdicionales(self, datosAdicionales):
-        self.datosAdicionales = datosAdicionales
+        self.set_field('datosAdicionales',datosAdicionales)
+
+    def set_tipoAjuste(self, tipoAjuste):
+        self.set_field('tipoAjuste',tipoAjuste)
+
+    ####### Liquidacion
 
     def set_emisorSolicitud(self, dictt):
 
@@ -807,12 +715,50 @@ class WSLSP:
     def _resetTributos(self):
         self.tributos = []
 
+    ######## Ajuste
+
+    def set_emisorAjusteSolicitud(self, dictt):
+
+        emisor = self.client.factory.create('ns0:EmisorAjusteSolicitud')
+        #TODO consultarUltim... can have no 'response'
+        keys = ['puntoVenta','nroComprobante','comprobanteAAjustar']
+        if 'comprobanteAAjustar' in dictt:
+            dictt['comprobanteAAjustar'] = self.new_comprobanteAAjustar(dictt['comprobanteAAjustar'])
+
+        for name,value in dictt.items():
+            if name in keys:
+                if self._check(name,value):
+                    setattr(emisor,name,value)
+                else:
+                    #TODO ERROR
+                    pass
+
+        self.emisorAjusteSolicitud = emisor
+        
+    def new_comprobanteAAjustar(self, dictt):
+        
+        comprobante = self.client.factory.create('ns0:ComprobanteAAjustar')
+        
+        keys = ['puntoVenta','nroComprobante','tipoComprobante']
+        #TODO nro y tipo can control?
+
+        for name,value in dictt.items():
+            if name in keys:
+                if self._check(name,value):
+                    setattr(comprobante,name,value)
+                else:
+                    #TODO ERROR
+                    pass
+
+        return comprobante
+
     CHECK_FUNC_DICT = {
         'codCaracter': _check_short,
         'codCategoria': _check_short, 
         'codCorte': _check_short, 
         'codGasto': _check_short, 
         'codOperacion': _check_short,
+        'codProvincia': _check_short,
         'codMotivo': _check_short,
         'codRaza': _check_short, 
         'codTributo': _check_short,
@@ -846,6 +792,7 @@ class WSLSP:
         'alicuota': _check_decimal(intt = 2, comma = 3, signed = True), 
         'nroDTE': _check_regex("\d{1,9}[-]\d{1}"),
         'nroRenspa': _check_regex("(0[0-9]|1[0-9]|2[0-3])[.]\d{3}[.]\d{1}.\d{5}[/]\w{2}"),
+        'tipoAjuste': _check_regex("(C|D)"),
         'alicuotaIVA': _check_alicuotaIVA, 
         'frigorifico': _no_check,
         'operador': _no_check,
@@ -853,20 +800,34 @@ class WSLSP:
         'raza': _no_check,
     }
 
+    #General checker
+
     def _check(self,name,value):
         if name in self.CHECK_FUNC_DICT:
             return self.CHECK_FUNC_DICT[name](value)
         else:
             return False
 
+    #Getters
+
     def _get_puntoVenta(self):
         if hasattr(self,'puntoVenta'):
             return self.puntoVenta
         return None
 
+    def _get_tipoAjsute(self):
+        if hasattr(self,'tipoAjuste'):
+            return self.tipoAjuste
+        return None
+
     def _get_tipoComprobante(self):
         if hasattr(self,'tipoComprobante'):
             return self.tipoComprobante
+        return None
+
+    def _get_fechaComprobante(self):
+        if hasattr(self,'fechaComprobante'):
+            return self.fechaComprobante
         return None
 
     def _get_nroComprobante(self):
@@ -879,9 +840,19 @@ class WSLSP:
             return self.codOperacion
         return None
 
+    def _get_codProvincia(self):
+        if hasattr(self,'codProvincia'):
+            return self.codProvincia
+        return None
+
     def _get_emisorSolicitud(self):
         if hasattr(self,'emisorSolicitud'):
             return self.emisorSolicitud
+        return None
+
+    def _get_emisorAjusteSolicitud(self):
+        if hasattr(self,'emisorAjusteSolicitud'):
+            return self.emisorAjusteSolicitud
         return None
 
     def _get_receptorSolicitud(self):
@@ -899,8 +870,18 @@ class WSLSP:
             return self.datosAdicionales
         return None
 
+    def _get_ajusteFinancieroSolicitud(self):
+        if hasattr(self,'ajusteFinancieroSolicitud'):
+            return self.ajusteFinancieroSolicitud
+        return None
+
     def _get_itemsDetalleLiquidacion(self):
         if hasattr(self,'itemsDetalleLiquidacion'):
+            return self.itemsDetalleLiquidacion
+        return []
+
+    def _get_itemsDetalleAjusteLiquidacion(self):
+        if hasattr(self,'itemsDetalleAjusteLiquidacion'):
             return self.itemsDetalleLiquidacion
         return []
 
@@ -1017,7 +998,7 @@ if __name__ == "__main__":
         #wslsp.print_services()
         wslsp.dummy()
         ipdb.set_trace()
-    if args.mode == 'TL':
+    elif args.mode == 'TL':
         wslsp = WSLSP(cuit = CUIT, token = wsaa.token, sign = wsaa.sign)
         #wslsp.print_services()
         wslsp.dummy()
@@ -1062,8 +1043,8 @@ if __name__ == "__main__":
         print 'consultarTiposComprobante ' + str(len(wslsp.consultarTiposComprobante()))
         print 'consultarTiposLiquidacion ' + str(len(wslsp.consultarTiposLiquidacion()))
         print 'consultarTributos ' + str(len(wslsp.consultarTributos()))
+        wslsp.set_codProvincia(1)
         print 'consultarLocalidadesPorProvincia() ' + str(len(wslsp.consultarLocalidadesPorProvincia()))
-        print 'consultarLocalidadesPorProvincia(2) ' + str(len(wslsp.consultarLocalidadesPorProvincia(2)))
         print 'consultarUltimoNroComprobantePorPtoVta ' + str(len(wslsp.consultarUltimoNroComprobantePorPtoVta()))
         print 'consultarLiquidacionPorNroComprobante ' + str(len(wslsp.consultarLiquidacionPorNroComprobante()))
         #THIS
@@ -1080,5 +1061,8 @@ if __name__ == "__main__":
         wslsp.add_Tributo({"codTributo" : 1, "importe" : 12.53})
 
         print 'generarLiquidacion ' + str(len(wslsp.generarLiquidacion()))
+
+        wslsp.setTipoAjuste('C')
+        wslsp.setFechaComprobante("2018-04-08")
 
         #print 'generarAjuste ' + str(len(wslsp.generarAjuste()))
