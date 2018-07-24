@@ -1,4 +1,3 @@
 # -*- coding: utf-8 -*-
-
-import codes
+import wslsp_codes
 import wslsp

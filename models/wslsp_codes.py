@@ -59,6 +59,8 @@ class WSLSPMotiveCodes(models.Model):
     _description = "WSLSP Motives Codes"
     _order = 'code'
 
+    billing_type = fields.Selection([('alive_kilo','Alive Kilo'),
+        ('performance','Performance')], 'Billing Type')
     code = fields.Char('Code', required=True, size=8)
     name = fields.Char('Desc', required=True, size=64)
     #category_id = fields.Many2one('res.currency', string="OpenERP Currency")
@@ -109,6 +111,8 @@ class WSLSPLiquidationTypeCodes(models.Model):
     _description = "WSLSP Liquidation Type Codes"
     _order = 'code'
 
+    billing_type = fields.Selection([('alive_kilo','Alive Kilo'),
+        ('performance','Performance')], 'Billing Type')
     code = fields.Char('Code', required=True, size=8)
     name = fields.Char('Desc', required=True, size=64)
     #category_id = fields.Many2one('res.currency', string="OpenERP Currency")
