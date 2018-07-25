@@ -1,9 +1,24 @@
-# -*- coding: utf-8 -*-
+# -*- encoding: utf-8 -*-
 ##############################################################################
-
-#   Copyright (c) 2017 Rafaela Alimentos (Eynes - Ingenieria del software)
-#   License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
-
+#
+#    OpenERP, Open Source Management Solution
+#    Copyright (c) 2017 E-MIPS (http://www.e-mips.com.ar)
+#    Copyright (c) 2017 Eynes (http://www.eynes.com.ar)
+#    All Rights Reserved. See AUTHORS for details.
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU Affero General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU Affero General Public License for more details.
+#
+#    You should have received a copy of the GNU Affero General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
 ##############################################################################
 
 from openerp import _, api, exceptions, fields, models
@@ -21,8 +36,17 @@ class WSLSPCategoryCodes(models.Model):
 
     code = fields.Char('Code', required=True, size=8)
     name = fields.Char('Desc', required=True, size=64)
-    #category_id = fields.Many2one('res.currency', string="OpenERP Currency")
+    species_id = fields.Many2one("ranch.species",string="Species")
     wslsp_config_id = fields.Many2one('wslsp.config')
+
+    @api.onchange('species_id')
+    def _control_species(self):
+
+        for code in self:
+            if self._origin.species_id:
+                self._origin.species_id.afip_code = False
+            if code.species_id:
+                code.species_id.afip_code = self.id
 
 class WSLSPCutCodes(models.Model):
     _name = "wslsp.cut.codes"
@@ -31,7 +55,6 @@ class WSLSPCutCodes(models.Model):
 
     code = fields.Char('Code', required=True, size=8)
     name = fields.Char('Desc', required=True, size=64)
-    #category_id = fields.Many2one('res.currency', string="OpenERP Currency")
     wslsp_config_id = fields.Many2one('wslsp.config')
 
 class WSLSPParticipantCharacterCodes(models.Model):
@@ -41,7 +64,6 @@ class WSLSPParticipantCharacterCodes(models.Model):
 
     code = fields.Char('Code', required=True, size=8)
     name = fields.Char('Desc', required=True, size=64)
-    #category_id = fields.Many2one('res.currency', string="OpenERP Currency")
     wslsp_config_id = fields.Many2one('wslsp.config')
 
 class WSLSPExpensesCodes(models.Model):
@@ -51,8 +73,17 @@ class WSLSPExpensesCodes(models.Model):
 
     code = fields.Char('Code', required=True, size=8)
     name = fields.Char('Desc', required=True, size=64)
-    #category_id = fields.Many2one('res.currency', string="OpenERP Currency")
+    expenses_id = fields.Many2one("ranch.expenses.type",string="Expenses")
     wslsp_config_id = fields.Many2one('wslsp.config')
+
+    @api.onchange('expenses_id')
+    def _control_expenses(self):
+
+        for code in self:
+            if self._origin.expenses_id:
+                self._origin.expenses_id.afip_code = False
+            if code.expenses_id:
+                code.expenses_id.afip_code = self.id
 
 class WSLSPMotiveCodes(models.Model):
     _name = "wslsp.motive.codes"
@@ -63,7 +94,6 @@ class WSLSPMotiveCodes(models.Model):
         ('performance','Performance')], 'Billing Type')
     code = fields.Char('Code', required=True, size=8)
     name = fields.Char('Desc', required=True, size=64)
-    #category_id = fields.Many2one('res.currency', string="OpenERP Currency")
     wslsp_config_id = fields.Many2one('wslsp.config')
 
 class WSLSPOperationCodes(models.Model):
@@ -73,7 +103,6 @@ class WSLSPOperationCodes(models.Model):
 
     code = fields.Char('Code', required=True, size=8)
     name = fields.Char('Desc', required=True, size=64)
-    #category_id = fields.Many2one('res.currency', string="OpenERP Currency")
     wslsp_config_id = fields.Many2one('wslsp.config')
 
 class WSLSPProvinceCodes(models.Model):
@@ -83,7 +112,6 @@ class WSLSPProvinceCodes(models.Model):
 
     code = fields.Char('Code', required=True, size=8)
     name = fields.Char('Desc', required=True, size=64)
-    #category_id = fields.Many2one('res.currency', string="OpenERP Currency")
     wslsp_config_id = fields.Many2one('wslsp.config')
 
 class WSLSPBreedCodes(models.Model):
@@ -93,7 +121,6 @@ class WSLSPBreedCodes(models.Model):
 
     code = fields.Char('Code', required=True, size=8)
     name = fields.Char('Desc', required=True, size=64)
-    #category_id = fields.Many2one('res.currency', string="OpenERP Currency")
     wslsp_config_id = fields.Many2one('wslsp.config')
 
 class WSLSPVoucherTypeCodes(models.Model):
@@ -103,7 +130,12 @@ class WSLSPVoucherTypeCodes(models.Model):
 
     code = fields.Char('Code', required=True, size=8)
     name = fields.Char('Desc', required=True, size=64)
-    #category_id = fields.Many2one('res.currency', string="OpenERP Currency")
+    is_direct = fields.Boolean('Is Direct?')
+    document_type = fields.Selection([
+        ('out_invoice', 'Client Invoice'),
+        ('in_invoice', 'Supplier Invoice'),
+    ], 'Document Type', select=True, readonly=False)
+    denomination_id = fields.Many2one('invoice.denomination', 'Denomination')
     wslsp_config_id = fields.Many2one('wslsp.config')
 
 class WSLSPLiquidationTypeCodes(models.Model):
@@ -115,7 +147,6 @@ class WSLSPLiquidationTypeCodes(models.Model):
         ('performance','Performance')], 'Billing Type')
     code = fields.Char('Code', required=True, size=8)
     name = fields.Char('Desc', required=True, size=64)
-    #category_id = fields.Many2one('res.currency', string="OpenERP Currency")
     wslsp_config_id = fields.Many2one('wslsp.config')
 
 class WSLSPTaxCodes(models.Model):
@@ -125,5 +156,4 @@ class WSLSPTaxCodes(models.Model):
 
     code = fields.Char('Code', required=True, size=8)
     name = fields.Char('Desc', required=True, size=64)
-    #category_id = fields.Many2one('res.currency', string="OpenERP Currency")
     wslsp_config_id = fields.Many2one('wslsp.config')

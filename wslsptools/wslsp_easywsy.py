@@ -202,118 +202,153 @@ class WSLSP(WebService):
     #     states_lst = self._parse_code_name(data_objects)
     #     return states_lst
     #----------------------End-Queries-----------------------#
-    def parse_invoices(self, invoices, first_number=False):
-        reg_qty = len(invoices)
-        voucher_type = invoices[0]._get_voucher_type()
-        pos = invoices[0]._get_pos()
+
+    def generate_liquidation(self, invoice):
+        conf = invoice.get_wslsp_config()
+        invoice_data = self.parse_invoice(invoice)
+        #Enviamos la liquidación
+        response = self.wslsp_query(conf, invoice_data, 'generarLiquidacion')
+
+    def parse_invoice(self, conf, invoice):
+        purchase_data = invoice._check_ranch_purchase()
+        voucher_type = invoice.get_wslsp_voucher_type(purchase_data=purchase_data)
+        pos = invoice._get_pos()
+        emitter_data = self._get_emitter_data(invoice)
+        receiver_data = self._get_receiver_data(invoice)
+        liquidation_data = self._get_liquidation_data(conf, invoice, purchase_data)
+        items_data = self._get_items_to_liquidation(conf, invoice)
+        expense_data = self._get_expenses(invoice)
+        tribute_data = self._get_tribute(invoice)
         data = {
             'GenerarLiquidacionReq': {
                 'solicitud': {
                     'codOperacion' : None,
-                    'emisor' : {
-                        'puntoVenta' : None,
-                        'tipoComprobante' : None,
-                        'nroComprobante' : None,
-                        'codCaracter' : None,
-                        'fechaInicioActividades' : None,
-                        'iibb' : None, #Opcional
-                        'nroRUCA' : None, #Opcional
-                        'nroRenspa' : None, #Opcional
-                        'cuitAutorizado' : None, #Opcional
-                    },
-                    'receptor' : {
-                        'codCaracter' : None,
-                        'operador' :{
-                            'cuit' : None,
-                            'iibb' : None,#Opcional
-                            'nroRUCA' : None, #Opcional
-                            'nroRenspa' : None, #Opcional
-                            'cuitAutorizado' : None, #Opcional
-                            },
-                    },
-                    'datosLiquidacion' : {
-                        'fechaComprobante' : None,
-                        'fechaOperacion' : None,
-                        'lugarRealizacion' : None, #Opcional
-                        'codMotivo' : None,
-                        'fechaRecepcion' : None, #Opcional
-                        'fechaFaena' : None, #Opcional
-                        'frigorifico' : { #Opcional
-                            'cuit' : None,
-                            'nroPlanta' : None,
-                        },
-                    },
-                    'guia' : [{ #Zero or more repetitons
-                        'nroGuia' : None,
-                    }],
-                    'dte' : [{ #Zero or more repetitons
-                        'nroDTE' : None,
-                        'nroRenspa' : None,
-                    }],
-                    'itemDetalleLiquidacion' : [{ #One or more repetitons
-                        'cuitCliente' : None, #Optional
-                        'codCategoria' : None,
-                        'tipoLiquidacion' : None,
-                        'cantidad' : None,
-                        'precioUnitario' : None,
-                        'alicuotaIVA' : None,
-                        'cantidadCabezas' : None,
-                        'raza' : {
-                            'codRaza' : None,
-                            'detalle' : None,
-                        },
-                        'nroTropa' : None, #Optional
-                        'codCorte' : None, #Optional
-                        'cantidadKgVivo' : None, #Optional
-                        'precioRecupero' : None, #Optional
-                        'liquidacionCompraAsociada' : [{ #Zero or more repetitons
-                            'tipoComprobante' : None,
-                            'puntoVenta' : None,
-                            'nroComprobante' : None,
-                            'nroItem' : None,
-                            'cantidadAsociada' : None,
-                        }],
-                    }],
-                    'gasto' : [{#Zero or more repetions
-                        'codGasto' : None,
-                        'descripcion' : None, #Optional
-                        'baseImponible' : None, #Optional
-                        'alicuota' : None, #Optional
-                        'importe' : None, #Optional
-                        'alicuotaIVA' : None, #Optional
-                        'tipoIVANulo' : None, #Optional
-                    }],
-                    'tributo' : [{ #Zero or more repetitions
-                        'codTributo' : None,
-                        'descripcion' : None, #Optional
-                        'baseImponible' : None, #Optional
-                        'alicuota' : None, #Optional
-                        'importe' : None, #Optional
-                    }],
-                    'datosAdicionales' : None, #Optional
+                    'emisor' : emitter_data,
+                    'receptor' : receiver_data,
+                    'datosLiquidacion' : liquidation_data,
+                    #'guia' : [{}}],
+                    #'dte' : [{}],
+                    'itemDetalleLiquidacion' : items_data,
+                    'gasto' : expense_data,
+                    'tributo' : tribute_data,
+                    #'datosAdicionales' : None, #Optional
                 },
             },
         }
-        details_array = data['FECAESolicitar']['FeCAEReq'][
-            'FeDetReq']['FECAEDetRequest']
-        nn = False
-        for inv_index, inv in enumerate(invoices):
-            if first_number:
-                nn = first_number + inv_index
-            inv_data = self.parse_invoice(inv, number=nn)
-            inv_data['first_of_lot'] = False
-            if (first_number and nn == first_number) or len(invoices) == 1:
-                inv_data['first_of_lot'] = True
-            details_array.append(inv_data)
         return data
 
-    def _get_emitter_data(self, invoice, number=False):
-        #pos_ar = invoice.pos_ar_id.name
+
+
+    # def parse_invoice(self, invoice):
+    #     reg_qty = len(invoices)
+    #     voucher_type = invoices[0]._get_voucher_type()
+    #     pos = invoices[0]._get_pos()
+    #     data = {
+    #         'GenerarLiquidacionReq': {
+    #             'solicitud': {
+    #                 'codOperacion' : None,
+    #                 'emisor' : {
+    #                     'puntoVenta' : None,
+    #                     'tipoComprobante' : None,
+    #                     'nroComprobante' : None,
+    #                     'codCaracter' : None,
+    #                     'fechaInicioActividades' : None,
+    #                     'iibb' : None, #Opcional
+    #                     'nroRUCA' : None, #Opcional
+    #                     'nroRenspa' : None, #Opcional
+    #                     'cuitAutorizado' : None, #Opcional
+    #                 },
+    #                 'receptor' : {
+    #                     'codCaracter' : None,
+    #                     'operador' :{
+    #                         'cuit' : None,
+    #                         'iibb' : None,#Opcional
+    #                         'nroRUCA' : None, #Opcional
+    #                         'nroRenspa' : None, #Opcional
+    #                         'cuitAutorizado' : None, #Opcional
+    #                         },
+    #                 },
+    #                 'datosLiquidacion' : {
+    #                     'fechaComprobante' : None,
+    #                     'fechaOperacion' : None,
+    #                     'lugarRealizacion' : None, #Opcional
+    #                     'codMotivo' : None,
+    #                     'fechaRecepcion' : None, #Opcional
+    #                     'fechaFaena' : None, #Opcional
+    #                     'frigorifico' : { #Opcional
+    #                         'cuit' : None,
+    #                         'nroPlanta' : None,
+    #                     },
+    #                 },
+    #                 'guia' : [{ #Zero or more repetitons
+    #                     'nroGuia' : None,
+    #                 }],
+    #                 'dte' : [{ #Zero or more repetitons
+    #                     'nroDTE' : None,
+    #                     'nroRenspa' : None,
+    #                 }],
+    #                 'itemDetalleLiquidacion' : [{ #One or more repetitons
+    #                     'cuitCliente' : None, #Optional
+    #                     'codCategoria' : None,
+    #                     'tipoLiquidacion' : None,
+    #                     'cantidad' : None,
+    #                     'precioUnitario' : None,
+    #                     'alicuotaIVA' : None,
+    #                     'cantidadCabezas' : None,
+    #                     'raza' : {
+    #                         'codRaza' : None,
+    #                         'detalle' : None,
+    #                     },
+    #                     'nroTropa' : None, #Optional
+    #                     'codCorte' : None, #Optional
+    #                     'cantidadKgVivo' : None, #Optional
+    #                     'precioRecupero' : None, #Optional
+    #                     'liquidacionCompraAsociada' : [{ #Zero or more repetitons
+    #                         'tipoComprobante' : None,
+    #                         'puntoVenta' : None,
+    #                         'nroComprobante' : None,
+    #                         'nroItem' : None,
+    #                         'cantidadAsociada' : None,
+    #                     }],
+    #                 }],
+    #                 'gasto' : [{#Zero or more repetions
+    #                     'codGasto' : None,
+    #                     'descripcion' : None, #Optional
+    #                     'baseImponible' : None, #Optional
+    #                     'alicuota' : None, #Optional
+    #                     'importe' : None, #Optional
+    #                     'alicuotaIVA' : None, #Optional
+    #                     'tipoIVANulo' : None, #Optional
+    #                 }],
+    #                 'tributo' : [{ #Zero or more repetitions
+    #                     'codTributo' : None,
+    #                     'descripcion' : None, #Optional
+    #                     'baseImponible' : None, #Optional
+    #                     'alicuota' : None, #Optional
+    #                     'importe' : None, #Optional
+    #                 }],
+    #                 'datosAdicionales' : None, #Optional
+    #             },
+    #         },
+    #     }
+    #     details_array = data['FECAESolicitar']['FeCAEReq'][
+    #         'FeDetReq']['FECAEDetRequest']
+    #     nn = False
+    #     for inv_index, inv in enumerate(invoices):
+    #         if first_number:
+    #             nn = first_number + inv_index
+    #         inv_data = self.parse_invoice(inv, number=nn)
+    #         inv_data['first_of_lot'] = False
+    #         if (first_number and nn == first_number) or len(invoices) == 1:
+    #             inv_data['first_of_lot'] = True
+    #         details_array.append(inv_data)
+    #     return data
+
+    def _get_emitter_data(self, invoice):
         pos_ar = invoice._get_pos()
-        voucher_type = invoice._get_voucher_type() #TODO
+        voucher_type = invoice.get_wslsp_voucher_type()
         date = invoice.company_id.date
-        if not number:
-            number = invoice.split_number()[1]
+        number = invoice.split_number()[1]
 
         vals = {
             'puntoVenta' : pos_ar,
@@ -328,7 +363,7 @@ class WSLSP(WebService):
         }
         return vals
 
-    def _get_recever_data(self, invoice):
+    def _get_receiver_data(self, invoice):
         partner_cuit = invoice.partner_id.vat
         vals = {
             'codCaracter' : None,
@@ -342,10 +377,9 @@ class WSLSP(WebService):
         }
         return vals
 
-    def _get_liquidation_data(self, invoice, config):
+    def _get_liquidation_data(self,conf, invoice, purchase_data):
         invoice_date = invoice.date_invoice
         invoice_line = invoice.invoice_line[0]
-        purchase_data = invoice.get_ranch_purchase_data()
         billing_type = purchase_data.billing_type
         motive_code = config.get_motive_code(billing_type)
 
@@ -363,7 +397,7 @@ class WSLSP(WebService):
         }
         return vals
 
-    def _get_items_to_liquidation(self, invoice, config):
+    def _get_items_to_liquidation(self, conf, invoice):
         invoice_lines = invoice.invoice_line
         item_lst = []
         for line in invoice_lines:
@@ -403,7 +437,7 @@ class WSLSP(WebService):
 
     def _get_expenses(self, invoice):
         expense_lst = []
-        purchase_data = invoice.get_ranch_purchase_data()
+        purchase_data = invoice.purchase_data_id
         for expense_line in purchase_data.expenses_lines:
             vals = {
                 'codGasto' : expenses_line.expense_type_id.code,
