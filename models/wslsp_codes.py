@@ -101,6 +101,8 @@ class WSLSPOperationCodes(models.Model):
     _description = "WSLSP Operation Codes"
     _order = 'code'
 
+    billing_type = fields.Selection([('alive_kilo','Alive Kilo'),
+        ('performance','Performance')], 'Billing Type')
     code = fields.Char('Code', required=True, size=8)
     name = fields.Char('Desc', required=True, size=64)
     wslsp_config_id = fields.Many2one('wslsp.config')

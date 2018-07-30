@@ -103,26 +103,34 @@ class WSLSPConfig(models.Model):
         motives = self.motive_ids.filtered(lambda x: x.billing_type == billing_type)
         if not motives:
             raise except_orm(_('WSLSP Config Error!'),
-                    _('the wslsp does not have a configuration for the motives [%s]') %(billing_type))
+                    _('The wslsp does not have a configuration for the motives [%s]') %(billing_type))
         return motives[0].code
 
     def get_liquidation_type_code(self, billing_type):
         liquidation_types = self.liquidation_type_ids.filtered(lambda x: x.billing_type == billing_type)
         if not liquidation_types:
             raise except_orm(_('WSLSP Config Error!'),
-                    _('the wslsp does not have a configuration for the liquidation types [%s]') %(billing_type))
+                    _('The wslsp does not have a configuration for the liquidation types [%s]') %(billing_type))
         return liquidation_types[0].code
 
     def get_category_code(self, species):
         categories = self.categories_ids.filtered(lambda x: x.species_id.id == species.id)
         if not categories:
             raise except_orm(_('WSLSP Config Error!'),
-                    _('the wslsp does not have a configuration for the categories [%s]') %(species.name))
+                    _('The wslsp does not have a configuration for the categories [%s]') %(species.name))
         return categories[0].code
+
+    def get_operation_code(self, billing_type):
+        operations = self.operation_ids.filtered(lambda x: x.billing_type == billing_type)
+        if not operations:
+            raise except_orm(_('WSLSP Config Error!'),
+                    _('The wslsp does not have a configuration for the operations [%s]') %(billing_type))
+        return operations[0].code
 
     @api.multi
     def _get_wslsp_obj(self):
-        ws = self._webservice_class(self.url)
+        self.ensure_one()
+        ws = self._webservice_class(self, self.url)
         return ws
 
     #TODO: Arreglar esta funcion
@@ -138,7 +146,7 @@ class WSLSPConfig(models.Model):
     @api.multi
     def get_wslsp_categories(self):
         ws = self._get_wslsp_obj()
-        category_lst = ws.get_categories(self)
+        category_lst = ws.get_categories()
         for category in category_lst:
             res = self.categories_ids.filtered(lambda x: x.code ==  category['code'])
             if not res:
@@ -150,7 +158,7 @@ class WSLSPConfig(models.Model):
     @api.multi
     def get_wslsp_cuts(self):
         ws = self._get_wslsp_obj()
-        cut_lst = ws.get_cuts(self)
+        cut_lst = ws.get_cuts()
         for cut in cut_lst:
             res = self.cut_ids.filtered(lambda x: x.code ==  cut['code'])
             if not res:
@@ -162,7 +170,7 @@ class WSLSPConfig(models.Model):
     @api.multi
     def get_wslsp_participant_characters(self):
         ws = self._get_wslsp_obj()
-        part_lst = ws.get_participant_characters(self)
+        part_lst = ws.get_participant_characters()
         for part in part_lst:
             res = self.participant_character_ids.filtered(lambda x: x.code ==  part['code'])
             if not res:
@@ -174,7 +182,7 @@ class WSLSPConfig(models.Model):
     @api.multi
     def get_wslsp_expenses(self):
         ws = self._get_wslsp_obj()
-        expense_lst = ws.get_expenses(self)
+        expense_lst = ws.get_expenses()
         for expense in expense_lst:
             res = self.expenses_ids.filtered(lambda x: x.code ==  expense['code'])
             if not res:
@@ -186,7 +194,7 @@ class WSLSPConfig(models.Model):
     @api.multi
     def get_wslsp_motives(self):
         ws = self._get_wslsp_obj()
-        motive_lst = ws.get_motives(self)
+        motive_lst = ws.get_motives()
         for motive in motive_lst:
             res = self.motive_ids.filtered(lambda x: x.code ==  motive['code'])
             if not res:
@@ -198,7 +206,7 @@ class WSLSPConfig(models.Model):
     @api.multi
     def get_wslsp_operations(self):
         ws = self._get_wslsp_obj()
-        operation_lst = ws.get_operations(self)
+        operation_lst = ws.get_operations()
         for operation in operation_lst:
             res = self.operation_ids.filtered(lambda x: x.code ==  operation['code'])
             if not res:
@@ -210,7 +218,7 @@ class WSLSPConfig(models.Model):
     @api.multi
     def get_wslsp_provinces(self):
         ws = self._get_wslsp_obj()
-        province_lst = ws.get_states(self)
+        province_lst = ws.get_states()
         for province in province_lst:
             res = self.province_ids.filtered(lambda x: x.code ==  province['code'])
             if not res:
@@ -222,7 +230,7 @@ class WSLSPConfig(models.Model):
     @api.multi
     def get_wslsp_breeds(self):
         ws = self._get_wslsp_obj()
-        breed_lst = ws.get_breeds(self)
+        breed_lst = ws.get_breeds()
         for breed in breed_lst:
             res = self.breed_ids.filtered(lambda x: x.code ==  breed['code'])
             if not res:
@@ -234,7 +242,7 @@ class WSLSPConfig(models.Model):
     @api.multi
     def get_wslsp_voucher_types(self):
         ws = self._get_wslsp_obj()
-        voucher_type_lst = ws.get_voucher_type(self)
+        voucher_type_lst = ws.get_voucher_type()
         for voucher_type in voucher_type_lst:
             res = self.voucher_type_ids.filtered(lambda x: x.code ==  voucher_type['code'])
             if not res:
@@ -246,7 +254,7 @@ class WSLSPConfig(models.Model):
     @api.multi
     def get_wslsp_liquidation_types(self):
         ws = self._get_wslsp_obj()
-        liquidation_lst = ws.get_liquidation_type(self)
+        liquidation_lst = ws.get_liquidation_type()
         for liquidation in liquidation_lst:
             res = self.liquidation_type_ids.filtered(lambda x: x.code ==  liquidation['code'])
             if not res:
@@ -258,7 +266,7 @@ class WSLSPConfig(models.Model):
     @api.multi
     def get_wslsp_taxes(self):
         ws = self._get_wslsp_obj()
-        taxes_lst = ws.get_tributes(self)
+        taxes_lst = ws.get_tributes()
         for taxes in taxes_lst:
             res = self.tax_ids.filtered(lambda x: x.code ==  taxes['code'])
             if not res:
@@ -272,5 +280,5 @@ class WSLSPConfig(models.Model):
         data = {'puntoVenta' : pos,
                 'tipoComprobante' : voucher_type
                 }
-        number = ws.get_last_voucher_number(self, pos, voucher_type)
+        number = ws.get_last_voucher_number(pos, voucher_type)
         return number

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <record model="ir.ui.view" id="view_wslsp_cattle_form">
+            <field name="name">invoice.wslsp.cattle.form</field>
+            <field name="model">account.invoice</field>
+            <field name="inherit_id" ref="account.invoice_supplier_form"/>
+            <field name="arch" type="xml">
+                <field name="account_id" position="before">
+                    <field name="pos_ar_id" attrs="{'required' : [('purchase_data_id','!=',False)],
+                        'invisible' : [('purchase_data_id', '=', False)]}"/>
+                </field>
+            </field>
+        </record>
+    </data>
+</openerp>

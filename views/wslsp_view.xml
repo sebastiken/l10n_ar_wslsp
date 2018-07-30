@@ -84,6 +84,7 @@
                                     string="⇒Get Operations" class="oe_button oe_form_button oe_link"/><!-- groups="account.group_account_user"/-->
 								<field name="operation_ids" nolabel="1">
                                 	<tree string="WSLSP Operations" editable="top">
+                                        <field name="billing_type"/>
                                     	<field name="name" readonly="1"/>
                                     	<field name="code" readonly="1"/>
                                 	</tree>

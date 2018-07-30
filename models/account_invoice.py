@@ -24,13 +24,46 @@
 from openerp import _, api, exceptions, fields, models
 from openerp.exceptions import except_orm
 from openerp.addons.decimal_precision import decimal_precision as dp
+import re
 import logging
+from base64 import b64decode
 
 _logger = logging.getLogger(__name__)
 
 
-class AccountInvocie(models.Model):
+class AccountInvoice(models.Model):
     _inherit = 'account.invoice'
+
+    aut_lsp = fields.Boolean('Autorize', default=False, help='Autorize liquidation to AFIP')
+
+    @api.multi
+    def _check_ranch_purchase(self):
+        if not self.purchase_data_id:
+            raise except_orm(_('WSLSP Error!'),
+                    _("Invoice does not have a ranch purchase data associated"))
+        return self.purchase_data_id
+
+    @api.model
+    def _check_fiscal_values(self):
+        self.ensure_one()
+        invtype = self.type
+        if not(invtype == 'in_invoice' and self.purchase_data_id):
+            res = super(AccountInvoice, self)._check_fiscal_values()
+            return res
+
+        denomination_id = self.denomination_id and self.denomination_id.id or False
+
+        if not denomination_id:
+            raise except_orm(_('Error!'), _('Denomination not set in invoice'))
+
+        if denomination_id not in self.pos_ar_id.denomination_ids.ids:
+            raise except_orm(_('Error!'),
+                _('Point of sale has not the same denomination as the invoice.'))
+
+        if self.fiscal_position.denomination_id.id != denomination_id:
+            raise except_orm(_('Error'),
+                _('The invoice denomination does not corresponds with this fiscal position.'))
+        return True
 
     def get_wslsp_config(self):
         config_obj = self.env['wslsp.config']
@@ -38,35 +71,76 @@ class AccountInvocie(models.Model):
         return config
 
     @api.multi
-    def _check_ranch_purchase(self):
-        self.ensure_one()
-        if not self.purchase_data_id:
-            raise except_orm(_('WSLSP Error!'),
-                    _("Invoice does not have a ranch purchase data associated"))
-        return purchase_data
-
-    @api.multi
-    def get_wslsp_voucher_type(self, purchase_data=False):
+    def _get_wslsp_voucher_type(self):
         self.ensure_one()
         config = self.get_wslsp_config()
-        if not purchase_data:
-            purchase_data = self._check_ranch_purchase()
+        purchase_data = self._check_ranch_purchase()
         billing_type = purchase_data.billing_type
         if billing_type == 'performance':
             is_direct = True
         else:
             is_direct = False
         voucher_type = config.voucher_type_ids.filtered(
-                lambda x: x.is_direct == is_direct and \
-                        x.document_type == self.type and \
-                        x.denomination_id.id = self.denomination_id.id)
+                lambda x: (x.is_direct == is_direct and
+                x.document_type == self.type and
+                x.denomination_id.id == self.denomination_id.id))
         if not voucher_type:
             raise except_orm(_('WSLSP Error!'),
                     _('There is not configured voucher type with document[%s] Is Direct[%s] Denomination[%s]') %
                     (self.type, is_direct, self.denomination_id.name))
         if len(voucher_type) > 1:
-            raise except_orm(_('WSLSP Error!'), _('There are duplicated voucher types')
+            raise except_orm(_('WSLSP Error!'), _('There are duplicated voucher types'))
         return voucher_type.code
+
+
+
+    #TODO: Sacar cuando se haga el merge de la rama:
+    #https://github.com/Maartincm/l10n-argentina/blob/8.0-wsfe-rebase
+    @api.multi
+    def split_number(self):
+        try:
+            pos, numb = self.internal_number.split('-')
+        except (ValueError, AttributeError):
+            raise except_orm(
+                _("Error!"),
+                _("Wrong Number format for invoice id: `%s`" % self.id))
+        if not pos:
+            raise except_orm(
+                _("Error!"),
+                _("Wrong POS for invoice id: `%s`" % self.id))
+        if not numb:
+            raise except_orm(
+                _("Error!"),
+                _("Wrong Number Sequence for invoice id: `%s`" % self.id))
+        try:
+            pos = int(pos)
+        except ValueError:
+            raise except_orm(
+                _("Error!"),
+                _("Wrong POS `%s` for invoice id: `%s`" % (pos, self.id)))
+        try:
+            numb = int(numb)
+        except ValueError:
+            raise except_orm(
+                _("Error!"),
+                _("Wrong Number Sequence `%s` for invoice id: `%s`" %
+                  (numb, self.id)))
+        return pos, numb
+
+    #TODO: Sacar cuando se haga el merge de la rama:
+    #https://github.com/Maartincm/l10n-argentina/blob/8.0-wsfe-rebase
+    @api.multi
+    def _get_pos(self):
+        self.ensure_one()
+        try:
+            pos = self.split_number()[0]
+        except Exception:
+            if not self.pos_ar_id:
+                err = _("Pos not found for invoice `%s` (id: %s)") % \
+                    (self.internal_number, self.id)
+                raise except_orm(_("Error!"), err)
+            pos = int(self.pos_ar_id.name)
+        return pos
 
     @api.multi
     def _get_next_wslsp_number(self, conf=False):
@@ -74,24 +148,151 @@ class AccountInvocie(models.Model):
         inv = self
         if not conf:
             conf = self.get_wslsp_config()
-        tipo_cbte = self._get_wslsp_voucher_type()
-        pos_ar = self.split_number()[0]
-        last = conf.get_last_voucher(pto_vta, tipo_cbte)
+        voucher_type = self._get_wslsp_voucher_type()
+        pos_ar = self._get_pos()
+        last = conf.get_last_voucher(pos_ar, voucher_type)
         return int(last + 1)
 
-    # @api.multi
-    # def action_aut_cae(self):
-    #     res = super(AccountInvocie, self).action_aut_cae()
-    #     for inv in self:
-    #         purchase_data = inv.purchase_data_id
-    #         if not purchase_data:
-    #             return res
-    #         conf = inv.get_wslsp_config()
-    #         ws = conf._get_wslsp_obj()
-    #         invoice_vals = ws.generate_liquidation(inv)
-    #         if invoice_vals:
-    #             inv.write(invoice_vals)
 
+    #@api.multi
+    #def get_last_date_invoice(self):
+
+    # @api.multi
+    # def get_next_invoice_number(self):
+
+    # Heredado para no cancelar si es una liquidacion del sector pecuario
+    @api.multi
+    def action_cancel(self):
+        for inv in self:
+            if inv.aut_lsp:
+                err = _("You cannot cancel an Electronic livestock sector " +
+                        "liquidation because it has been informed to AFIP.")
+                raise exceptions.ValidationError(err)
+        return super(AccountInvoice, self).action_cancel()
+
+    @api.multi
+    def action_number(self):
+        invoices = self.env['account.invoice']
+        for inv in self:
+            invtype = self.type
+            if not(invtype == 'in_invoice' and inv.purchase_data_id):
+                res = super(AccountInvoice, inv).action_number()
+                continue
+
+            #Chequeamos los valores fiscales
+            inv._check_fiscal_values()
+
+            # si el usuario no ingreso un numero,
+            # busco el ultimo y lo incremento , si no hay ultimo va 1.
+            # si el usuario hizo un ingreso dejo ese numero
+            internal_number = inv.internal_number
+            if not internal_number:
+                next_number = inv._get_next_wslsp_number()
+                pos_ar = inv.pos_ar_id
+                internal_number = '%s-%08d' % (pos_ar.name, next_number)
+
+            m = re.match('^[0-9]{4}-[0-9]{8}$', internal_number)
+            if not m:
+                raise except_orm(_('Error'),
+                        _('The Invoice Number should be the format XXXX-XXXXXXXX'))
+
+            invoice_vals = {
+                'aut_lsp' : True,
+                'internal_number' : internal_number
+            }
+
+            inv.write(invoice_vals)
+        return True
+
+    @api.multi
+    def action_aut_cae(self):
+        res = super(AccountInvoice, self).action_aut_cae()
+        for inv in self:
+            if not inv.aut_lsp:
+                res = super(AccountInvoice, inv).action_aut_cae()
+                continue
+
+            self._sanitize_taxes(inv)
+            new_cr = self.pool.cursor()
+            uid = self.env.user.id
+            ctx = self.env.context
+            conf = inv.get_wslsp_config()
+            ws = conf._get_wslsp_obj()
+            __import__('ipdb').set_trace()
+            try:
+                invoice_vals = ws.generate_liquidation(inv)
+
+                #Attacheamos el PDF
+                inv.attach_liquidation_report(invoice_vals['pdf'])
+                invoice_vals.pop('pdf')
+                inv.write(invoice_vals)
+
+                # Commit the info that was written to the invoice and
+                # given by AFIP to prevent desynchronizations
+                self.env.cr.commit()
+            except except_orm as e:
+                raise
+            except Exception as e:
+                raise except_orm(_('WSLSP Validation Error'),
+                        _('Error received was: \n %s') % repr(e))
+            finally:
+                # Creamos el wslsp.request con otro cursor,
+                # porque puede pasar que
+                # tengamos una excepcion e igualmente,
+                # tenemos que escribir la request
+                # Sino al hacer el rollback se pierde hasta el wslsp.request
+                self.env.cr.rollback()
+                with api.Environment.manage():
+                    new_env = api.Environment(new_cr, uid, ctx)
+                    ws.log_request(new_env)
+                    new_cr.commit()
+                    new_cr.close()
+        return True
+
+    @api.one
+    def attach_liquidation_report(self, pdf):
+        #Decode PDF from base64
+        #file_pdf = b64decode(pdf)
+        data_attach = {
+			'name' : self.internal_number + '.pdf',
+			'datas' : pdf,
+			'datas_fname' : self.internal_number + '.pdf',
+			'res_model' : 'account.invoice',
+			'res_id' : self.id
+		}
+        #paso el regisruttro en el modelo attachment
+        self.env['ir.attachment'].create(data_attach)
+        return True
+
+    @api.one
+    def relate_liquidation_invoice(self, pos, number, date_invoice, cae, cae_due_date):
+        # Tomamos la factura y mandamos a realizar
+        # el asiento contable primero.
+        self.action_move_create()
+
+        invoice_vals = {
+            'internal_number': '%04d-%08d' % (pos, number),
+            'date_invoice': date_invoice,
+            'cae': cae,
+            'cae_due_date': cae_due_date,
+        }
+
+        # Escribimos los campos necesarios de la factura
+        self.write(invoice_vals)
+
+        invoice_name = self.name_get()[0][1]
+        if not self.reference:
+            ref = invoice_name
+        else:
+            ref = '%s [%s]' % (invoice_name, self.reference)
+
+        # Actulizamos el campo reference del move_id
+        # correspondiente a la creacion de la factura
+        self._update_reference(ref)
+
+        # Llamamos al workflow para que siga su curso
+        self.signal_workflow('invoice_massive_open')
+        return True
 
 class AccountInvoiceLine(models.Model):
     _inherit = 'account.invoice.line'
