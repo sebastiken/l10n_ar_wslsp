@@ -90,7 +90,7 @@ class AccountInvoice(models.Model):
                     (self.type, is_direct, self.denomination_id.name))
         if len(voucher_type) > 1:
             raise except_orm(_('WSLSP Error!'), _('There are duplicated voucher types'))
-        return voucher_type.code
+        return int(voucher_type.code)
 
 
 
@@ -175,13 +175,12 @@ class AccountInvoice(models.Model):
         invoices = self.env['account.invoice']
         for inv in self:
             invtype = self.type
-            if not(invtype == 'in_invoice' and inv.purchase_data_id):
+            purchase_data = inv.purchase_data_id
+            performance = purchase_data.billing_type == 'performance'
+            if invtype != 'in_invoice' or not performance:
                 res = super(AccountInvoice, inv).action_number()
                 continue
-
-            #Chequeamos los valores fiscales
             inv._check_fiscal_values()
-
             # si el usuario no ingreso un numero,
             # busco el ultimo y lo incremento , si no hay ultimo va 1.
             # si el usuario hizo un ingreso dejo ese numero
@@ -218,13 +217,13 @@ class AccountInvoice(models.Model):
             ctx = self.env.context
             conf = inv.get_wslsp_config()
             ws = conf._get_wslsp_obj()
-            __import__('ipdb').set_trace()
             try:
                 invoice_vals = ws.generate_liquidation(inv)
 
                 #Attacheamos el PDF
-                inv.attach_liquidation_report(invoice_vals['pdf'])
-                invoice_vals.pop('pdf')
+                pdf_data = invoice_vals.pop('pdf', False)
+                if pdf_data:
+                    inv.attach_liquidation_report(pdf_data)
                 inv.write(invoice_vals)
 
                 # Commit the info that was written to the invoice and
@@ -262,36 +261,6 @@ class AccountInvoice(models.Model):
 		}
         #paso el regisruttro en el modelo attachment
         self.env['ir.attachment'].create(data_attach)
-        return True
-
-    @api.one
-    def relate_liquidation_invoice(self, pos, number, date_invoice, cae, cae_due_date):
-        # Tomamos la factura y mandamos a realizar
-        # el asiento contable primero.
-        self.action_move_create()
-
-        invoice_vals = {
-            'internal_number': '%04d-%08d' % (pos, number),
-            'date_invoice': date_invoice,
-            'cae': cae,
-            'cae_due_date': cae_due_date,
-        }
-
-        # Escribimos los campos necesarios de la factura
-        self.write(invoice_vals)
-
-        invoice_name = self.name_get()[0][1]
-        if not self.reference:
-            ref = invoice_name
-        else:
-            ref = '%s [%s]' % (invoice_name, self.reference)
-
-        # Actulizamos el campo reference del move_id
-        # correspondiente a la creacion de la factura
-        self._update_reference(ref)
-
-        # Llamamos al workflow para que siga su curso
-        self.signal_workflow('invoice_massive_open')
         return True
 
 class AccountInvoiceLine(models.Model):

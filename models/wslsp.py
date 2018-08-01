@@ -64,7 +64,7 @@ class WSLSPConfig(models.Model):
         'company_id' : lambda self, cr, uid, context=None: self.pool.get('res.users')._get_company(cr, uid, context=context),
         }
 
-    @api.multi
+    @api.model
     def create(self, vals):
         # Creamos tambien un TA para este servcio y esta compania
         ta_obj = self.env['wsaa.ta']
@@ -82,8 +82,8 @@ class WSLSPConfig(models.Model):
                 'config_id' : wsaa_ids[0],
                 }
 
-            ta_id = ta_obj.create(ta_vals)
-            vals['wsaa_ticket_id'] = ta_id
+            wsaa_ta = ta_obj.create(ta_vals)
+            vals['wsaa_ticket_id'] = wsaa_ta.id
 
         return super(WSLSPConfig, self).create(vals)
 

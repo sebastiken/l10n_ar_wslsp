@@ -17,7 +17,23 @@ import logging
 _logger = logging.getLogger(__name__)
 
 
-DATE_FORMAT = '%Y-%m-%d'
+AFIP_DATE_FORMAT = '%Y-%m-%d'
+
+NOCHECK = ['nroRenspa', 'nroRUCA', 'cuit', 'cuitAutorizado',
+            'nroPlanta', 'nroDTE', 'cuitCliente', 'descripcion',
+            'datosAdicionales','codCategoria']
+
+NATURAL = ['codOperacion', 'codCaracter','nroComprobante',
+           'tipoComprobante','puntoVenta', 'cantidadKgVivo',
+           'cantidadAsociada', 'codRaza', 'cantidad', 'cantidadCabezas',
+           'nroTropa', 'codCorte', 'codGasto', 'codTributo',
+           'tipoLiquidacion', 'codMotivo']
+
+DATES = ['fechaInicioActividades', 'fechaComprobante',
+        'fechaOperacion', 'fechaRecepcion', 'fechaFaena']
+
+POSITIVE_REALS = ['precioRecupero', 'baseImponible',
+        'importe', 'alicuota', 'precioUnitario']
 
 class WSLSP(WebService):
 
@@ -28,33 +44,85 @@ class WSLSP(WebService):
     ###############################################################################
     # AFIP Data Validation Methods According to:
     # https://www.afip.gob.ar/ws/WSLSP/manual_wslsp_1.2.pdf
-    INTEGER = ['codOperacion', 'codCaracter','nroComprobante',
-           'tipoComprobante','puntoVenta']
-
-    DATES = ['fechaInicioActividades', 'fechaComprobante',
-            'fechaOperacion', 'fechaRecepcion', 'fechaFaena']
-
-    @wsapi.check(INTEGER)
+    @wsapi.check(NATURAL)
     def _check_emitter_required_fields(value, sequence=1):
-        if not isinstance(value, int):
+        try:
+            value = int(value)
+        except Exception:
             return False
         return True
 
+    @wsapi.check(POSITIVE_REALS)
+    def validate_positive_reals(val):
+        if not val or (isinstance(val, float) and val > 0):
+            return True
+        return False
+
     @wsapi.check(DATES)
     def _check_date(value, sequence=2):
-        datetime.strptime(value, DATE_FORMAT)
+        datetime.strptime(value, AFIP_DATE_FORMAT)
         return True
 
+    @wsapi.check(['iibb'])
+    def _check_iibb(value):
+        try:
+            value = int(value)
+        except Exception:
+            return False
+        if not (1 <= int(value) <= 15):
+            return False
+        return True
+
+    @wsapi.check(['nroGuia'])
+    def _check_guia(value):
+        if not isinstance(value, int):
+            return False
+        if not (1 <= value <= 15):
+            return False
+        return True
+
+    @wsapi.check(['alicuotaIVA'])
+    def _check_tax_amount(value):
+        if not isinstance(value, float):
+            return False
+        if value not in (10.5, 21, 21.0):
+            return False
+        return True
+
+    @wsapi.check(['fechaOperacion'], sequence=4)
+    def _check_operation_date(value, fechaComprobante):
+        operation_date = value.replace('-','')
+        voucher_date = fechaComprobante.replace('-','')
+        if voucher_date < operation_date:
+            return False
+        return True
+
+    @wsapi.check(['fechaRecepcion'], sequence=5) #Es opcional
+    def _check_receipt_date(value, fechaOperacion, fechaComprobante):
+        operation_date = fechaOperacion.replace('-','')
+        voucher_date = fechaComprobante.replace('-','')
+        receipt_date = value.replace('-','')
+        if not (operation_date <= receipt_date <= voucher_date):
+            return False
+        return True
+
+    @wsapi.check(['fechaFaena']) #Es opcional
+    def _check_chore(value, fechaRecepcion, sequence=5):
+        chore_date = value.replace('-','')
+        receipt_date = fechaRecepcion.replace('-','')
+        if not (receipt_date <= chore_date):
+            return False
+        return True
 
     ###############################################################################
 
     #--------------------authentication-----------------------#
-    def prepare_auth(self, conf):
+    def prepare_auth(self):
         token, sign = self.config.wsaa_ticket_id.get_token_sign()
         auth = {
             'token': token,
             'sign': sign,
-            'cuit': conf.cuit
+            'cuit': self.config.cuit
         }
         self.login('auth', auth)
         return True
@@ -62,23 +130,32 @@ class WSLSP(WebService):
     #-------------------End-Authentication-------------------#
 
 
-
     #------------------------Queries-------------------------#
-    def wslsp_query(self,qry_data, operation):
-        __import__('ipdb').set_trace()
+    def wslsp_query(self, qry_data, operation):
+        # __import__('ipdb').set_trace()
         self.prepare_auth()
-        self.add(qry_data, no_check='all')
+        self.add(qry_data, no_check=NOCHECK) #no_check='all' or [fields]
         response = self.request(operation)
         return response
 
     def _check_error(self, response, raise_exception=True):
-        msg = ''
-        if 'errors' in response:
-            error = response['error'].msg
-            err_code = str(response['error'].code)
-            msg = 'Codigo/s Error: %s[%s]' % (error, err_code)
+        errors = []
+        #Error de campos incorrectos?
+        if 'errores' in response:
+            for e in response.errores.error:
+                desc = e.descripcion#.encode('utf-8')
+                e_msg = _("Error [%s] \n Description: %s \n\n") %(e.codigo, desc)
+                errors.append(e_msg)
 
-            if msg != '' and raise_exception:
+        #Es un error de los excepcionales?
+        if 'faultcode' in response:
+            e_msg = _('An unexpected error has occurred!! \n')
+            e_msg += response.faultcode + '\n' + response.faultstring
+            errors.append(e_msg)
+
+        msg = ''.join(errors)
+        if raise_exception:
+            if errors:
                 raise except_orm(_('WSLSP Error!'), msg)
         return msg
 
@@ -236,35 +313,30 @@ class WSLSP(WebService):
     #----------------------End-Queries-----------------------#
 
     def generate_liquidation(self, invoice):
-        # conf = invoice.get_wslsp_config()
-        #Guardamos la configuracion y la factura
-        #self.data.sent_invoice = invoice
-        #self.data.invoice_conf = conf
+        #Guardamos la factura
+        self.data.invoice = invoice
 
-        invoice_data = self.parse_invoice(invoice)
+        invoice_data = self.parse_invoice()
 
         #Enviamos la liquidación
         response = self.wslsp_query(invoice_data, 'generarLiquidacion')
 
-        #Esta mal generada?
-        # errors = self._check_invoice_error(response)
-        # if errors:
-        #     raise except_orm(errors)
-
+        #Parseamos la respuesta y guardamos los datos para los logs
         invoice_vals = self.parse_invoice_response(response)
         return invoice_vals
 
-    def parse_invoice(self, invoice):
+    def parse_invoice(self):
+        invoice = self.data.invoice
         voucher_type = invoice._get_wslsp_voucher_type()
         pos = invoice._get_pos()
 
-        operation_code = self._get_operation_code(invoice)
-        emitter_data = self._get_emitter_data(invoice)
-        receiver_data = self._get_receiver_data(invoice)
-        liquidation_data = self._get_liquidation_data(invoice)
-        items_data = self._get_items_to_liquidation(invoice)
-        expense_data = self._get_expenses(invoice)
-        tribute_data = self._get_tribute(invoice)
+        operation_code = self._get_operation_code()
+        emitter_data = self._get_emitter_data()
+        receiver_data = self._get_receiver_data()
+        liquidation_data = self._get_liquidation_data()
+        items_data = self._get_items_to_liquidation()
+        expense_data = self._get_expenses()
+        tribute_data = self._get_tribute()
         guide_data = self._get_guide()
         dte_data = self._get_dte()
 
@@ -296,13 +368,15 @@ class WSLSP(WebService):
             data['GenerarLiquidacionReq']['solicitud'].update(tribute_data)
         return data
 
-    def _get_operation_code(self, invoice):
+    def _get_operation_code(self):
+        invoice = self.data.invoice
         purchase_data = invoice._check_ranch_purchase()
         billing_type = purchase_data.billing_type
         operation_code = self.config.get_operation_code(billing_type)
         return operation_code
 
-    def _get_emitter_data(self, invoice):
+    def _get_emitter_data(self):
+        invoice = self.data.invoice
         company = invoice.company_id
         pos_ar = invoice._get_pos()
         voucher_type = invoice._get_wslsp_voucher_type()
@@ -324,13 +398,8 @@ class WSLSP(WebService):
 
         return vals
 
-    # def _has_all_attrs(self, suds_obj, *args, **kwargs):
-    #     if 'itemDetalleLiquidacion' in suds_obj.solicitud:
-    #         for detail in suds_obj.solicitud.itemDetalleLiquidacion:
-    #             del(detail.tipoIVANulo)
-    # return
-
-    def _get_receiver_data(self, invoice):
+    def _get_receiver_data(self):
+        invoice = self.data.invoice
         #partner = invoice.partner_id
         partner = invoice.company_id.partner_id
         partner_cuit = '30160000011' or partner.vat
@@ -347,7 +416,8 @@ class WSLSP(WebService):
         }
         return vals
 
-    def _get_liquidation_data(self, invoice):
+    def _get_liquidation_data(self):
+        invoice = self.data.invoice
         invoice_date = invoice.date_invoice
         invoice_line = invoice.invoice_line[0]
         purchase_data = invoice._check_ranch_purchase()
@@ -368,11 +438,12 @@ class WSLSP(WebService):
         }
         return vals
 
-    def _get_items_to_liquidation(self, invoice):
+    def _get_items_to_liquidation(self):
+        invoice = self.data.invoice
         invoice_lines = invoice.invoice_line
         item_lst = []
         for line in invoice_lines:
-            partner = line.invoice_id.company_id.partner_id
+            partner = invoice.company_id.partner_id
             summary_line = line.get_romaneo_summary_line()
             romaneo = summary_line.romaneo_id
             species = summary_line.species_id
@@ -383,6 +454,7 @@ class WSLSP(WebService):
             billing_type = romaneo.billing_type
             liquidation_code = self.config.get_liquidation_type_code(billing_type)
             tax = line.invoice_line_tax_id
+            voucher_type = invoice._get_wslsp_voucher_type()
             beed_code = 1
 
             vals = { #One or more repetitons
@@ -391,34 +463,45 @@ class WSLSP(WebService):
                 'tipoLiquidacion' : liquidation_code,
                 'cantidad' : int(line.quantity),
                 'precioUnitario' : line.price_unit,
-                #'tipoIVANulo' : 'NG', #'NA', #Opcional
-                'alicuotaIVA' : 21.0, #21.0,#tax.amount * 100, #Opcional #No se informa si la denominacion es C
-                'cantidadCabezas' : int(head_qty), #Opcional
+                # 'tipoIVANulo' : '', #'NA', #Opcional
                 'raza' : {
                     'codRaza' : beed_code, #species.afip_code.code,
-                    #'detalle' : species.name, #SOLO COMPLETAR SI ES 21 O 99
                 },
                 'nroTropa' : '1',#troop_number, #Optional
                 #'codCorte' : '1', #Optional
                 'cantidadKgVivo' : kg_qty, #Optional
                 #'precioRecupero' : line.price_unit, #Optional
-                # 'liquidacionCompraAsociada' : [{ #Zero or more repetitons
-                #     'tipoComprobante' : False,
-                #     'puntoVenta' : None,
-                #     'nroComprobante' : None,
-                #     'nroItem' : None,
-                #     'cantidadAsociada' : None,
-                #     }]
                 }
 
             if int(beed_code) in (21, 99):
                 vals['raza'].update({'detalle' : species.name})
 
+            if tax:
+                if voucher_type != 189: #No se informa si la denominacion es C
+                    vals['alicuotaIVA'] = float("{0:.2f}".format(tax.amount * 100))
+
+            #Informamos la cantidad de cabezas si el tipo de liquidacion es por cabeza
+            if liquidation_code != 1:
+                vals['cantidadCabezas'] = int(head_qty)
+
+            #TODO: no esta desarrollado
+            #Si es liquidacion de compra
+            if voucher_type in (183,185):
+                #One or more repetitions
+                vals['liquidacionCompraAsociada'] = [{
+                    'tipoComprobante' : False,
+                    'puntoVenta' : False,
+                    'nroComprobante' : False,
+                    'nroItem' : False,
+                    'cantidadAsociada' : False,
+                }]
+
             item_lst.append(vals)
         return item_lst
 
-    def _get_expenses(self, invoice):
+    def _get_expenses(self):
         expense_lst = []
+        invoice = self.data.invoice
         purchase_data = invoice.purchase_data_id
         for expense_line in purchase_data.expenses_lines:
             vals = {
@@ -441,8 +524,9 @@ class WSLSP(WebService):
             expense_lst.append({'gasto' : vals})
         return expense_lst
 
-    def _get_tribute(self, invoice):
+    def _get_tribute(self):
         tribute_lst = []
+        invoice = self.data.invoice
         # for tribute in tributes:
         #     vals = { #Zero or more repetitions
         #         'codTributo' : None,
@@ -467,62 +551,32 @@ class WSLSP(WebService):
         }
         return {'dte' : [dte]}
 
-    def _check_invoice_error(self, response):
-        errors = []
-        #Error de campos incorrectos?
-        if 'errores' in response:
-            for e in response.errores.error:
-                desc = e.descripcion.encode('latin1')
-                e_msg = _("Error [%s] \n Description: %s \n\n") %(e.codigo, desc)
-                errors.append(e_msg)
-        return errors
-
     def parse_invoice_response(self, response):
         comp = {}
 
         #Si tenemos errores lo guardamos
-        errors = self._check_invoice_error(response)
+        errors = self._check_error(response, False)
         if errors:
-            comp.update(errors)
+            err_vals = {'errors' : errors}
+            self.last_request['parse_result'] = err_vals
+            raise except_orm(_("WSLSP Invoice Error"),
+                    _("Error when validating the invoice. Please, see it and send the invoice again!"))
 
-        if 'cabecera' in response:
-            header = response.cabecera
-            header_vals = {
-                'CAE' : header.cae,
-                'CAE_due_date' : header.fechaVencimientoCae,
-                'AFIPProcess' : header.fechaProcesoAFIP,
-            }
-            comp.update(header_vals)
-
-        if 'emisor' in response:
-            setting = response.emisor
-            setting_vals = {
-                'voucher_type' : setting.tipoComprobante,
-                'voucher_number' : setting.nroComprobante,
-                'pos_ar' : setting.puntoVenta,
-            }
-            comp.update(setting_vals)
-
-        if 'datosLiquidacion' in response:
-            liquidation = response.datosLiquidacion
-            liquidation_vals = {
-                'date_invoice': liquidation.fechaComprobante,
-            }
-            comp.update(liquidation_vals)
-
-        if 'resumenTotales' in response:
-            total = response.resumenTotales
-            total_vals = {
-                'amount_total' : total.importeTotalNeto
-            }
-            comp.update(total_vals)
-
-
-        if 'pdf' in response:
-            pdf_vals = {
-                'pdf' : response.pdf,
-            }
-            comp.update(pdf_vals)
+        header = response.cabecera
+        setting = response.emisor
+        liquidation = response.datosLiquidacion
+        total = response.resumenTotales
+        comp = {
+            'CAE' : header.cae,
+            'CAE_due_date' : header.fechaVencimientoCae,
+            'AFIPProcess' : header.fechaProcesoAFIP,
+            'voucher_type' : setting.tipoComprobante,
+            'voucher_number' : setting.nroComprobante,
+            'pos_ar' : setting.puntoVenta,
+            'date_invoice': liquidation.fechaComprobante,
+            'amount_total' : total.importeTotalNeto,
+            'pdf' : response.pdf,
+        }
 
         #Guardamos los datos de la liquidación para usarlo en los logs
         self.last_request['parse_result'] = comp
@@ -530,43 +584,43 @@ class WSLSP(WebService):
         #Armamos los valores para escribir en la factura
         internal_number = '%04d-%08d' % (comp['pos_ar'], comp['voucher_number'])
         invoice_vals = {
-                'cae' : comp['CAE'],
-                'cae_due_date' : comp['CAE_due_date'],
-                'internal_number' :  internal_number,
-                'date_invoice' : comp['date_invoice'],
-                'pdf' : comp['pdf'],
+            'cae' : comp['CAE'],
+            'cae_due_date' : comp['CAE_due_date'],
+            'internal_number' :  internal_number,
+            'date_invoice' : comp['date_invoice'],
+            'pdf' : comp['pdf'],
         }
         return invoice_vals
 
     def log_request(self, environment):
         env = environment
-        __import__('ipdb').set_trace()
         if not hasattr(self, 'last_request'):
             return False
 
         wsfe_req_obj = env['wsfe.request']
         voucher_type_obj = env['wslsp.voucher_type.codes']
         res = self.last_request['parse_result']
-        voucher_type_code = res['voucher_type']
 
+        #No hay rechazos ni aprobaciones, solo hay errores.
+        #Completamos con los datos que enviamos de la factura
+        invoice = self.data.invoice
+        voucher_type_code = invoice._get_wslsp_voucher_type()
         voucher_type = voucher_type_obj.search([('code', '=', voucher_type_code)])
         voucher_type_name = voucher_type.name
+        pos = invoice._get_pos()
 
-        req_details = []
-        pos = res['pos_ar']
-
-        errs = ''.join(res.get('errors',[]))
+        errs = res.get('errors', False)
         result = 'A'
         if errs:
             result = 'R'
 
         detail_vals ={
-            #'name': invoice_id,
-            'voucher_number': res['voucher_number'],
-            'voucher_date': res['date_invoice'],
-            'amount_total': res['amount_total'],
-            'cae': res['CAE'],
-            'cae_duedate': res['CAE_due_date'],
+            'name': invoice.id,
+            'voucher_number': res.get('voucher_number'),
+            'voucher_date': invoice.date_invoice,
+            'amount_total': res.get('amount_total'),
+            'cae': res.get('CAE'),
+            'cae_duedate': res.get('CAE_due_date'),
             'result' : result,
         }
 
