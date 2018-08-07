@@ -142,8 +142,19 @@ class AccountInvoice(models.Model):
             pos = int(self.pos_ar_id.name)
         return pos
 
+    #TODO: Sacar cuando se haga el merge de la rama:
+    #https://github.com/Maartincm/l10n-argentina/blob/8.0-wsfe-rebase
     @api.multi
-    def _get_next_wslsp_number(self, conf=False):
+    def complete_date_invoice(self):
+        for inv in self:
+            if not inv.date_invoice:
+                inv.write({
+                    'date_invoice': fields.Date.context_today(self),
+                })
+        return True
+
+    @api.multi
+    def get_next_wslsp_number(self, conf=False):
         self.ensure_one()
         inv = self
         if not conf:
@@ -153,6 +164,44 @@ class AccountInvoice(models.Model):
         last = conf.get_last_voucher(pos_ar, voucher_type)
         return int(last + 1)
 
+    @api.multi
+    def get_next_liquidation_number(self):
+        """
+        Funcion para obtener el siguiente numero de comprobante
+        correspondiente en el sistema
+        """
+        self.ensure_one()
+        invoice = self
+        cr = self.env.cr
+        # Obtenemos el ultimo numero de comprobante
+        # para ese pos y ese tipo de comprobante
+        q = """
+        SELECT MAX(TO_NUMBER(
+            SUBSTRING(internal_number FROM '[0-9]{8}$'), '99999999')
+            )
+        FROM account_invoice
+        WHERE internal_number ~ '^[0-9]{4}-[0-9]{8}$'
+            AND pos_ar_id = %(pos_id)s
+            AND state in %(state)s
+            AND type = %(type)s
+            AND purchase_data_id IS NOT NULL
+        """
+        q_vals = {
+            'pos_id': invoice.pos_ar_id.id,
+            'state': ('open', 'paid', 'cancel',),
+            'type': invoice.type,
+        }
+        cr.execute(q, q_vals)
+        last_number = cr.fetchone()
+        self.env.invalidate_all()
+
+        # Si no devuelve resultados, es porque es el primero
+        if not last_number or not last_number[0]:
+            next_number = 1
+        else:
+            next_number = last_number[0] + 1
+
+        return int(next_number)
 
     #@api.multi
     #def get_last_date_invoice(self):
@@ -186,7 +235,7 @@ class AccountInvoice(models.Model):
             # si el usuario hizo un ingreso dejo ese numero
             internal_number = inv.internal_number
             if not internal_number:
-                next_number = inv._get_next_wslsp_number()
+                next_number = inv.get_next_liquidation_number()
                 pos_ar = inv.pos_ar_id
                 internal_number = '%s-%08d' % (pos_ar.name, next_number)
 

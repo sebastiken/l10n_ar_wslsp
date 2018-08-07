@@ -1,10 +1,26 @@
-# -*- coding: utf-8 -*-
+# -*- encoding: utf-8 -*-
+##############################################################################
+#
+#    OpenERP, Open Source Management Solution
+#    Copyright (c) 2017 E-MIPS (http://www.e-mips.com.ar)
+#    Copyright (c) 2017 Eynes (http://www.eynes.com.ar)
+#    All Rights Reserved. See AUTHORS for details.
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU Affero General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU Affero General Public License for more details.
+#
+#    You should have received a copy of the GNU Affero General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
 ##############################################################################
 
-#   Copyright (c) 2017 Rafaela Alimentos (Eynes - Ingenieria del software)
-#   License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
-
-##############################################################################
 from easywsy import WebService, wsapi
 from openerp import _, api, exceptions, fields, models
 from openerp.exceptions import except_orm
@@ -23,17 +39,25 @@ NOCHECK = ['nroRenspa', 'nroRUCA', 'cuit', 'cuitAutorizado',
             'nroPlanta', 'nroDTE', 'cuitCliente', 'descripcion',
             'datosAdicionales','codCategoria']
 
-NATURAL = ['codOperacion', 'codCaracter','nroComprobante',
-           'tipoComprobante','puntoVenta', 'cantidadKgVivo',
-           'cantidadAsociada', 'codRaza', 'cantidad', 'cantidadCabezas',
+NATURAL = ['codOperacion', 'codCaracter','tipoComprobante',
+           'puntoVenta', 'cantidadKgVivo', 'cantidadAsociada',
+           'codRaza', 'cantidad', 'cantidadCabezas',
            'nroTropa', 'codCorte', 'codGasto', 'codTributo',
            'tipoLiquidacion', 'codMotivo']
 
-DATES = ['fechaInicioActividades', 'fechaComprobante',
-        'fechaOperacion', 'fechaRecepcion', 'fechaFaena']
+DATES = ['fechaInicioActividades', 'fechaComprobante']
 
 POSITIVE_REALS = ['precioRecupero', 'baseImponible',
         'importe', 'alicuota', 'precioUnitario']
+
+def check_afip_date_format(date, reraise=True):
+    try:
+        datetime.strptime(date, AFIP_DATE_FORMAT)
+    except Exception:
+        if reraise:
+            raise except_orm(_("WSLSP Error!"), _("Invalid Date Format"))
+        return False
+    return True
 
 class WSLSP(WebService):
 
@@ -44,24 +68,26 @@ class WSLSP(WebService):
     ###############################################################################
     # AFIP Data Validation Methods According to:
     # https://www.afip.gob.ar/ws/WSLSP/manual_wslsp_1.2.pdf
-    @wsapi.check(NATURAL)
-    def _check_emitter_required_fields(value, sequence=1):
+    @wsapi.check(NATURAL, sequence=1)
+    def _check_natural_fields(value):
         try:
             value = int(value)
         except Exception:
             return False
+        if value <= 0:
+            return False
         return True
 
-    @wsapi.check(POSITIVE_REALS)
+    @wsapi.check(POSITIVE_REALS, sequence=1)
     def validate_positive_reals(val):
         if not val or (isinstance(val, float) and val > 0):
             return True
         return False
 
-    @wsapi.check(DATES)
-    def _check_date(value, sequence=2):
-        datetime.strptime(value, AFIP_DATE_FORMAT)
-        return True
+    @wsapi.check(DATES, sequence=1)
+    def _check_date(value):
+        check = check_afip_date_format(value, reraise=False)
+        return check
 
     @wsapi.check(['iibb'])
     def _check_iibb(value):
@@ -89,40 +115,91 @@ class WSLSP(WebService):
             return False
         return True
 
-    @wsapi.check(['fechaOperacion'], sequence=4)
+    @wsapi.check(['fechaOperacion'], reraise=True, sequence=4)
     def _check_operation_date(value, fechaComprobante):
+        if not value:
+            raise except_orm(_("WSFE Error!"), _("Operation Date was not setted"))
+        check_afip_date_format(value)
         operation_date = value.replace('-','')
         voucher_date = fechaComprobante.replace('-','')
+
         if voucher_date < operation_date:
-            return False
+            raise except_orm(_("WSFE Error!"),
+                    _("Voucher Date is less that Operation Date"))
         return True
 
-    @wsapi.check(['fechaRecepcion'], sequence=5) #Es opcional
+    @wsapi.check(['fechaRecepcion'], reraise=True, sequence=5) #Es opcional
     def _check_receipt_date(value, fechaOperacion, fechaComprobante):
+        if not value:
+            raise except_orm(_("WSFE Error!"), _("Reception Date was not setted"))
+        check_afip_date_format(value)
         operation_date = fechaOperacion.replace('-','')
         voucher_date = fechaComprobante.replace('-','')
         receipt_date = value.replace('-','')
+
         if not (operation_date <= receipt_date <= voucher_date):
-            return False
+            raise except_orm(_("WSFE Error!"), _("Invalid Receipt Date"))
         return True
 
-    @wsapi.check(['fechaFaena']) #Es opcional
-    def _check_chore(value, fechaRecepcion, sequence=5):
+    @wsapi.check(['fechaFaena'], reraise=True, sequence=5) #Es opcional
+    def _check_chore(value, fechaRecepcion):
+        if not value:
+            raise except_orm(_("WSFE Error!"), _("Chore Date was not setted"))
+        check_afip_date_format(value)
         chore_date = value.replace('-','')
         receipt_date = fechaRecepcion.replace('-','')
+
         if not (receipt_date <= chore_date):
-            return False
+            raise except_orm(_("WSFE Error!"),
+                    _("Chore Date is less than Receipt Date"))
+        return True
+
+    @wsapi.check(['nroComprobante'], reraise=True, sequence=20)
+    def _check_invoice_number(value, invoice):
+        conf = invoice.get_wslsp_config()
+        wslsp_next_number = invoice.get_next_wslsp_number(conf=conf)
+        # Si es homologacion, no hacemos el chequeo del numero
+        if not conf.homologation:
+            if int(wslsp_next_number) != int(value):
+                raise except_orm(_("WSFE Error!"),
+                        _("The next number in the system [%d] does not " +
+                          "match the one obtained from AFIP WSLSP [%d]") %
+                        (int(value), int(wslsp_next_number)))
         return True
 
     ###############################################################################
 
     #--------------------authentication-----------------------#
-    def prepare_auth(self):
-        token, sign = self.config.wsaa_ticket_id.get_token_sign()
+    def prepare_auth(self, key):
+        if not hasattr(self, 'auth') or not self.auth or \
+                self.auth.attrs['token'] == 'T':
+
+            data_instance = getattr(self.data, key)
+            if not data_instance:
+                raise except_orm(_("WSLSP Error!"),
+                        _("Error when getting instance with key %s")%(key))
+
+            token, sign = self.config.wsaa_ticket_id.get_token_sign()
+
+            auth = {
+                'token': token,
+                'sign': sign,
+                'cuit': self.config.cuit
+            }
+
+            self.login('auth', auth)
+            auth_instance = getattr(data_instance, self.auth._element_name)
+            for k, v in self.auth.attrs.items():
+                setattr(auth_instance, k, v)
+        return True
+
+    def auth_falsehood(self):
+        #Le pasamos datos para poder hacer los
+        #chequeos primero y luego agregarle el token verdadero
         auth = {
-            'token': token,
-            'sign': sign,
-            'cuit': self.config.cuit
+            'token': 'T',
+            'sign': 'S',
+            'cuit': 'C',
         }
         self.login('auth', auth)
         return True
@@ -132,9 +209,12 @@ class WSLSP(WebService):
 
     #------------------------Queries-------------------------#
     def wslsp_query(self, qry_data, operation):
-        # __import__('ipdb').set_trace()
-        self.prepare_auth()
+        if not qry_data or not isinstance(qry_data, dict):
+            raise except_orm(_("WSLSP Error!"),_("Invalid Query Data"))
+        self.auth_falsehood()
         self.add(qry_data, no_check=NOCHECK) #no_check='all' or [fields]
+        ref_key = qry_data.keys()[0]
+        self.prepare_auth(ref_key)
         response = self.request(operation)
         return response
 
@@ -315,6 +395,8 @@ class WSLSP(WebService):
     def generate_liquidation(self, invoice):
         #Guardamos la factura
         self.data.invoice = invoice
+        #Actualizamos fechas
+        invoice.complete_date_invoice()
 
         invoice_data = self.parse_invoice()
 
@@ -362,8 +444,8 @@ class WSLSP(WebService):
             data['GenerarLiquidacionReq']['solicitud'].update(dte_data)
         # if guide_data:
         #     data['GenerarLiquidacionReq']['solicitud'].update(guide_data)
-        if expense_data:
-            data['GenerarLiquidacionReq']['solicitud'].update(expense_data)
+        # if expense_data:
+        #     data['GenerarLiquidacionReq']['solicitud'].update(expense_data)
         if tribute_data:
             data['GenerarLiquidacionReq']['solicitud'].update(tribute_data)
         return data
@@ -388,6 +470,7 @@ class WSLSP(WebService):
             'puntoVenta' : pos_ar,
             'tipoComprobante' : voucher_type,
             'nroComprobante' : number,
+            'invoice' : invoice, #Pass reference
             'codCaracter' : '4', #TODO
             'fechaInicioActividades' : date,
             'iibb' : iibb, #Opcional
@@ -423,14 +506,17 @@ class WSLSP(WebService):
         purchase_data = invoice._check_ranch_purchase()
         billing_type = purchase_data.billing_type
         motive_code = self.config.get_motive_code(billing_type)
+        purchase_date = purchase_data.purchase_date
+        summary_line = invoice_line.get_romaneo_summary_line()
+        romaneo = summary_line.romaneo_id
 
         vals = {
-            'fechaComprobante' : '2018-07-26',#invoice_date,
-            'fechaOperacion' : '2018-07-23', #Compra
+            'fechaComprobante' : invoice_date,#'2018-07-26',#invoice_date,
+            'fechaOperacion' : purchase_date,#'2018-07-23', #purchase_date
             #'lugarRealizacion' : False,#Opcional
             'codMotivo' : motive_code,
-            'fechaRecepcion' : '2018-07-24', #Opcional
-            'fechaFaena' :'2018-07-25', #Opcional
+            'fechaRecepcion' : romaneo.date,#'2018-07-24', #Opcional TODO
+            'fechaFaena' :romaneo.date,#'2018-07-25', #Opcional TODO
             #'frigorifico' : { #Opcional
             #    'cuit' : '30678155469',
             #    'nroPlanta' : '1',
@@ -467,7 +553,7 @@ class WSLSP(WebService):
                 'raza' : {
                     'codRaza' : beed_code, #species.afip_code.code,
                 },
-                'nroTropa' : '1',#troop_number, #Optional
+                'nroTropa' : troop_number, #Optional
                 #'codCorte' : '1', #Optional
                 'cantidadKgVivo' : kg_qty, #Optional
                 #'precioRecupero' : line.price_unit, #Optional
@@ -477,16 +563,16 @@ class WSLSP(WebService):
                 vals['raza'].update({'detalle' : species.name})
 
             if tax:
-                if voucher_type != 189: #No se informa si la denominacion es C
+                if int(voucher_type) != 189: #No se informa si la denominacion es C
                     vals['alicuotaIVA'] = float("{0:.2f}".format(tax.amount * 100))
 
             #Informamos la cantidad de cabezas si el tipo de liquidacion es por cabeza
-            if liquidation_code != 1:
+            if int(liquidation_code) != 1:
                 vals['cantidadCabezas'] = int(head_qty)
 
             #TODO: no esta desarrollado
             #Si es liquidacion de compra
-            if voucher_type in (183,185):
+            if int(voucher_type) in (183,185):
                 #One or more repetitions
                 vals['liquidacionCompraAsociada'] = [{
                     'tipoComprobante' : False,
@@ -503,7 +589,7 @@ class WSLSP(WebService):
         expense_lst = []
         invoice = self.data.invoice
         purchase_data = invoice.purchase_data_id
-        for expense_line in purchase_data.expenses_lines:
+        for expenses_line in purchase_data.expenses_lines:
             vals = {
                 'codGasto' : expenses_line.expense_type_id.code,
                 #'descripcion' : None, #Optional
@@ -521,8 +607,8 @@ class WSLSP(WebService):
             else:
                 #TODO MUST BE 10.5 OR 21
                 vals['importe'] = expenses_line.expense_amount_bill
-            expense_lst.append({'gasto' : vals})
-        return expense_lst
+            expense_lst.append(vals)
+        return {'gasto' :  expense_lst}
 
     def _get_tribute(self):
         tribute_lst = []
