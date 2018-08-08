@@ -203,11 +203,30 @@ class AccountInvoice(models.Model):
 
         return int(next_number)
 
-    #@api.multi
-    #def get_last_date_invoice(self):
-
-    # @api.multi
-    # def get_next_invoice_number(self):
+    @api.multi
+    def get_last_liquidation_date(self):
+        self.ensure_one()
+        q = """
+        SELECT MAX(date_invoice)
+        FROM account_invoice
+        WHERE internal_number ~ '^[0-9]{4}-[0-9]{8}$'
+            AND pos_ar_id = %(pos_id)s
+            AND state in %(state)s
+            AND type = %(type)s
+            AND purchase_data_id IS NOT NULL
+        """
+        q_vals = {
+            'pos_id': self.pos_ar_id.id,
+            'state': ('open', 'paid', 'cancel',),
+            'type': self.type,
+        }
+        self.env.cr.execute(q, q_vals)
+        last_date = self.env.cr.fetchone()
+        if last_date and last_date[0]:
+            last_date = last_date[0]
+        else:
+            last_date = False
+        return last_date
 
     # Heredado para no cancelar si es una liquidacion del sector pecuario
     @api.multi

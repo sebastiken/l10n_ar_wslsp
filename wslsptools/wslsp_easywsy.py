@@ -34,6 +34,7 @@ _logger = logging.getLogger(__name__)
 
 
 AFIP_DATE_FORMAT = '%Y-%m-%d'
+DATE_FORMAT = '%Y-%m-%d'
 
 NOCHECK = ['nroRenspa', 'nroRUCA', 'cuit', 'cuitAutorizado',
             'nroPlanta', 'nroDTE', 'cuitCliente', 'descripcion',
@@ -45,8 +46,6 @@ NATURAL = ['codOperacion', 'codCaracter','tipoComprobante',
            'nroTropa', 'codCorte', 'codGasto', 'codTributo',
            'tipoLiquidacion', 'codMotivo']
 
-DATES = ['fechaInicioActividades', 'fechaComprobante']
-
 POSITIVE_REALS = ['precioRecupero', 'baseImponible',
         'importe', 'alicuota', 'precioUnitario']
 
@@ -54,8 +53,6 @@ def check_afip_date_format(date, reraise=True):
     try:
         datetime.strptime(date, AFIP_DATE_FORMAT)
     except Exception:
-        if reraise:
-            raise except_orm(_("WSLSP Error!"), _("Invalid Date Format"))
         return False
     return True
 
@@ -84,11 +81,6 @@ class WSLSP(WebService):
             return True
         return False
 
-    @wsapi.check(DATES, sequence=1)
-    def _check_date(value):
-        check = check_afip_date_format(value, reraise=False)
-        return check
-
     @wsapi.check(['iibb'])
     def _check_iibb(value):
         try:
@@ -115,14 +107,47 @@ class WSLSP(WebService):
             return False
         return True
 
+    @wsapi.check(['fechaInicioActividades'], reraise=True, sequence=3)
+    def _check_start_activity(value):
+        check = check_afip_date_format(value, reraise=False)
+        if not check:
+            raise except_orm(_("WSFE Error!"), _("Invalid start activity date"))
+        today = datetime.now().date()
+        activity_date = datetime.strptime(value, AFIP_DATE_FORMAT).date()
+        if activity_date > today:
+            raise except_orm(_("WSFE Error!"), _("Activity Date is greater than today"))
+        return True
+
+    @wsapi.check(['fechaComprobante'], reraise=True, sequence=3)
+    def _check_liquidation_date(value, invoice):
+        check = check_afip_date_format(value, reraise=False)
+        if not check:
+            raise except_orm(_("WSFE Error!"), _("Invalid Invoice Date"))
+        last_date = invoice.get_last_liquidation_date()
+        afip_date = datetime.strptime(value, AFIP_DATE_FORMAT)
+        odoo_format_date = afip_date.strftime(DATE_FORMAT)
+        if last_date and odoo_format_date < last_date:
+            raise except_orm(_("WSLSP Error!"),
+                    _('There is another Invoice with a most recent date [%s] ' +
+                  'for the same Point of Sale and Denomination.') % (last_date))
+
+        today = fields.Date.context_today(invoice)
+        today_dt = datetime.strptime(today, DATE_FORMAT)
+        offset = today_dt - afip_date
+        if abs(offset.days) > 10:
+            raise except_orm(_('WSFE Error!'),
+                    _('Invoice Date difference with today should be less ' +
+                    'than 10 days for product sales.'))
+        return True
+
+
     @wsapi.check(['fechaOperacion'], reraise=True, sequence=4)
     def _check_operation_date(value, fechaComprobante):
-        if not value:
-            raise except_orm(_("WSFE Error!"), _("Operation Date was not setted"))
-        check_afip_date_format(value)
-        operation_date = value.replace('-','')
-        voucher_date = fechaComprobante.replace('-','')
-
+        check = check_afip_date_format(value)
+        if not check:
+            raise except_orm(_("WSFE Error!"), _("Invalid Operation Date"))
+        operation_date = datetime.strptime(value, AFIP_DATE_FORMAT).date()
+        voucher_date = datetime.strptime(fechaComprobante, AFIP_DATE_FORMAT).date()
         if voucher_date < operation_date:
             raise except_orm(_("WSFE Error!"),
                     _("Voucher Date is less that Operation Date"))
@@ -130,25 +155,23 @@ class WSLSP(WebService):
 
     @wsapi.check(['fechaRecepcion'], reraise=True, sequence=5) #Es opcional
     def _check_receipt_date(value, fechaOperacion, fechaComprobante):
-        if not value:
-            raise except_orm(_("WSFE Error!"), _("Reception Date was not setted"))
-        check_afip_date_format(value)
-        operation_date = fechaOperacion.replace('-','')
-        voucher_date = fechaComprobante.replace('-','')
-        receipt_date = value.replace('-','')
-
+        check = check_afip_date_format(value)
+        if not check:
+            raise except_orm(_("WSFE Error!"), _("Invalid Reception Date"))
+        operation_date = datetime.strptime(fechaOperacion, AFIP_DATE_FORMAT).date()
+        voucher_date = datetime.strptime(fechaComprobante, AFIP_DATE_FORMAT).date()
+        receipt_date = datetime.strptime(fechaComprobante, AFIP_DATE_FORMAT).date()
         if not (operation_date <= receipt_date <= voucher_date):
             raise except_orm(_("WSFE Error!"), _("Invalid Receipt Date"))
         return True
 
     @wsapi.check(['fechaFaena'], reraise=True, sequence=5) #Es opcional
     def _check_chore(value, fechaRecepcion):
-        if not value:
-            raise except_orm(_("WSFE Error!"), _("Chore Date was not setted"))
-        check_afip_date_format(value)
-        chore_date = value.replace('-','')
-        receipt_date = fechaRecepcion.replace('-','')
-
+        check = check_afip_date_format(value)
+        if not check:
+            raise except_orm(_("WSFE Error!"), _("Invalid Chore Date"))
+        chore_date = datetime.strptime(value, AFIP_DATE_FORMAT).date()
+        receipt_date = datetime.strptime(fechaRecepcion, AFIP_DATE_FORMAT).date()
         if not (receipt_date <= chore_date):
             raise except_orm(_("WSFE Error!"),
                     _("Chore Date is less than Receipt Date"))
@@ -511,6 +534,7 @@ class WSLSP(WebService):
         romaneo = summary_line.romaneo_id
 
         vals = {
+            'invoice' : invoice,
             'fechaComprobante' : invoice_date,#'2018-07-26',#invoice_date,
             'fechaOperacion' : purchase_date,#'2018-07-23', #purchase_date
             #'lugarRealizacion' : False,#Opcional
