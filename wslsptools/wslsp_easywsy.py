@@ -29,6 +29,7 @@ from openerp.tools import DEFAULT_SERVER_DATE_FORMAT, DEFAULT_SERVER_DATETIME_FO
 from datetime import datetime
 import time
 import logging
+import re
 
 _logger = logging.getLogger(__name__)
 
@@ -36,15 +37,15 @@ _logger = logging.getLogger(__name__)
 AFIP_DATE_FORMAT = '%Y-%m-%d'
 DATE_FORMAT = '%Y-%m-%d'
 
-NOCHECK = ['nroRenspa', 'nroRUCA', 'cuit', 'cuitAutorizado',
-            'nroPlanta', 'nroDTE', 'cuitCliente', 'descripcion',
+NOCHECK = ['cuit', 'cuitAutorizado',
+            'nroPlanta', 'cuitCliente', 'descripcion',
             'datosAdicionales','codCategoria']
 
 NATURAL = ['codOperacion', 'codCaracter','tipoComprobante',
            'puntoVenta', 'cantidadKgVivo', 'cantidadAsociada',
            'codRaza', 'cantidad', 'cantidadCabezas',
            'nroTropa', 'codCorte', 'codGasto', 'codTributo',
-           'tipoLiquidacion', 'codMotivo']
+           'tipoLiquidacion', 'codMotivo', 'nroRUCA']
 
 POSITIVE_REALS = ['precioRecupero', 'baseImponible',
         'importe', 'alicuota', 'precioUnitario']
@@ -188,6 +189,20 @@ class WSLSP(WebService):
                         _("The next number in the system [%d] does not " +
                           "match the one obtained from AFIP WSLSP [%d]") %
                         (int(value), int(wslsp_next_number)))
+        return True
+
+    @wsapi.check(['nroDTE'], reraise=True, sequence=20)
+    def _check_dte(value):
+        res = re.search('\d{1,9}[-]\d{1}', value)
+        if not res:
+            raise except_orm(_("WSFE Error!"), _("Invalid DTE!"))
+        return True
+
+    @wsapi.check(['nroRenspa'], reraise=True, sequence=20)
+    def _check_renspa(value):
+        res = re.search('(0[0-9]|1[0-9]|2[0-3])[.]\d{3}[.]\d{1}.\d{5}[\/]\w{2}', value)
+        if not res:
+            raise except_orm(_("WSFE Error!"), _("Invalid Renspa!"))
         return True
 
     ###############################################################################
@@ -452,8 +467,6 @@ class WSLSP(WebService):
                     'emisor' : emitter_data,
                     'receptor' : receiver_data,
                     'datosLiquidacion' : liquidation_data,
-                    #'guia' : [guide],
-                    #'dte' : [dte],
                     'itemDetalleLiquidacion' : items_data,
                     #'gasto' : expense_data or {},
                     #'tributo' : tribute_data or {},
@@ -465,8 +478,8 @@ class WSLSP(WebService):
         #Update no required data
         if dte_data:
             data['GenerarLiquidacionReq']['solicitud'].update(dte_data)
-        # if guide_data:
-        #     data['GenerarLiquidacionReq']['solicitud'].update(guide_data)
+        if guide_data:
+            data['GenerarLiquidacionReq']['solicitud'].update(guide_data)
         # if expense_data:
         #     data['GenerarLiquidacionReq']['solicitud'].update(expense_data)
         if tribute_data:
@@ -489,6 +502,10 @@ class WSLSP(WebService):
         number = invoice.split_number()[1]
         iibb = company.partner_id.nro_insc_iibb
 
+        nro_ruca = company.ruca
+        if self.config.homologation:
+            nro_ruca = '1011'
+
         vals = {
             'puntoVenta' : pos_ar,
             'tipoComprobante' : voucher_type,
@@ -497,7 +514,7 @@ class WSLSP(WebService):
             'codCaracter' : '4', #TODO
             'fechaInicioActividades' : date,
             'iibb' : iibb, #Opcional
-            'nroRUCA' : '1011', #Opcional #VER EL CODIGO VERDADERO
+            'nroRUCA' : nro_ruca,#'1011', #Opcional #VER EL CODIGO VERDADERO
             #'nroRenspa' : '22.123.1.12345/A4', #Opcional
             #'cuitAutorizado' : '30678155469', #Opcional
         }
@@ -506,16 +523,25 @@ class WSLSP(WebService):
 
     def _get_receiver_data(self):
         invoice = self.data.invoice
+        company = invoice.company_id
         #partner = invoice.partner_id
         partner = invoice.company_id.partner_id
-        partner_cuit = '30160000011' or partner.vat
+
+        partner_cuit = partner.vat
+        if self.config.homologation:
+            partner_cuit = '30160000011'#Cuit de pruebas
+
+        nro_ruca = company.ruca
+        if self.config.homologation:
+            nro_ruca = '1011'
+
         iibb = partner.nro_insc_iibb
         vals = {
             'codCaracter' : '4', #TODO
             'operador' : {
                 'cuit' : partner_cuit,
                 'iibb' : iibb,#Opcional
-                'nroRUCA' : '1011', #Opcional
+                'nroRUCA' : nro_ruca,#'1011', #Opcional
                 #'nroRenspa' : '22.123.1.12345/A4', #Opcional
                 #'cuitAutorizado' : '30678155469', #Opcional
             }
@@ -650,14 +676,14 @@ class WSLSP(WebService):
 
     def _get_guide(self):
         guide = {
-            'nroGuia' : '1'
+            'nroGuia' : self.data.invoice.guide
         }
         return guide
 
     def _get_dte(self):
         dte = {
-            'nroDTE' : '012682055-0',
-            'nroRenspa' : '20.002.0.00116/D0', #Opcional
+            'nroDTE' : self.data.invoice.dte,#'012682055-0',
+            'nroRenspa' : self.data.invoice.renspa,#'20.002.0.00116/D0', #Opcional
         }
         return {'dte' : [dte]}
 
