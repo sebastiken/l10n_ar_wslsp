@@ -30,12 +30,16 @@ from base64 import b64decode
 
 _logger = logging.getLogger(__name__)
 
+class AccountInvoiceLine(models.Model):
+    _inherit = 'account.invoice.line'
+
+    breed_id = fields.Many2one('wslsp.breed.codes', 'Breed')
 
 class AccountInvoice(models.Model):
     _inherit = 'account.invoice'
 
     aut_lsp = fields.Boolean('Autorize', default=False, help='Autorize liquidation to AFIP')
-    purchase_data_type = fields.Selection(related='purchase_data_id.billing_type', string="Purchase Data Type")
+    purchase_data_type = fields.Selection(related='purchase_data_id.billing_type', string="Purchase Data Type", store=True)
 
     @api.multi
     def _check_ranch_purchase(self):

@@ -4,14 +4,61 @@
         <record model="ir.ui.view" id="view_wslsp_cattle_form">
             <field name="name">invoice.wslsp.cattle.form</field>
             <field name="model">account.invoice</field>
-            <field name="inherit_id" ref="account.invoice_supplier_form"/>
+            <field name="inherit_id" ref="rafalim_cattle_account.view_invoice_ranch_purchase_data_form"/>
             <field name="arch" type="xml">
                 <field name="account_id" position="before">
                     <field name="purchase_data_type" invisible="1"/>
+
                     <field name="pos_ar_id" attrs="{'required' : ['|',('purchase_data_id','!=',False),('purchase_data_type', '=', 'performance')],
                         'invisible' : ['|',('purchase_data_id', '=', False),('purchase_data_type', '!=', 'performance')]}"/>
                 </field>
+
+                <field name="dte" position="attributes">
+                    <attribute name="attrs">{'required' : ['|',('purchase_data_id','!=',False),('purchase_data_type', '=', 'performance')]}</attribute>
+                </field>
+                <field name="renspa" position="attributes">
+                    <attribute name="attrs">{'required' : ['|',('purchase_data_id','!=',False),('purchase_data_type', '=', 'performance')]}</attribute>
+                </field>
+                <field name="guide" position="attributes">
+                    <attribute name="attrs">{'required' : ['|',('purchase_data_id','!=',False),('purchase_data_type', '=', 'performance')]}</attribute>
+                </field>
+
+                <xpath expr="//field[@name='invoice_line']/tree/field[@name='product_id']" position="after">
+                    <field name="breed_id" options="{'no_create': True}"/>
+                </xpath>
             </field>
         </record>
+
+        <record model="ir.actions.act_window" id="action_wslsp_autoliquidation">
+            <field name="name">WSLSP Autoliquidation</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">account.invoice</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('type','=','in_invoice'), ('purchase_data_type', '=', 'performance')]</field>
+            <field name="context">{'default_type': 'in_invoice', 'type': 'in_invoice', 'journal_type': 'purchase'}</field>
+        </record>
+
+        <record model="ir.actions.act_window.view" id="action_wslsp_invoice_tree">
+            <field name="sequence" eval="10"/>
+            <field name="view_mode">tree</field>
+            <field name="view_id" ref="account.invoice_tree"/>
+            <field name="act_window_id" ref="action_wslsp_autoliquidation"/>
+        </record>
+
+        <record model="ir.actions.act_window.view" id="action_wslsp_invoice_form">
+            <field name="sequence" eval="20"/>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="rafalim_cattle_account.view_invoice_ranch_purchase_data_form"/>
+            <field name="act_window_id" ref="action_wslsp_autoliquidation"/>
+        </record>
+
+        <menuitem id="menu_action_autoliquidation"
+            parent="rafalim_cattle_account.menu_root_ranch"
+            name="Autoliquidation"
+            sequence="1"
+            action="action_wslsp_autoliquidation" />
+
+
     </data>
 </openerp>

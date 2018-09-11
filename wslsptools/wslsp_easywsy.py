@@ -591,7 +591,7 @@ class WSLSP(WebService):
             liquidation_code = self.config.get_liquidation_type_code(billing_type)
             tax = line.invoice_line_tax_id
             voucher_type = invoice._get_wslsp_voucher_type()
-            beed_code = 1
+            breed_code = line.breed_id.code
 
             vals = { #One or more repetitons
                 #'cuitCliente' : partner.vat, #Optional
@@ -601,7 +601,7 @@ class WSLSP(WebService):
                 'precioUnitario' : line.price_unit,
                 # 'tipoIVANulo' : '', #'NA', #Opcional
                 'raza' : {
-                    'codRaza' : beed_code, #species.afip_code.code,
+                    'codRaza' : breed_code, #species.afip_code.code,
                 },
                 'nroTropa' : troop_number, #Optional
                 #'codCorte' : '1', #Optional
@@ -609,7 +609,7 @@ class WSLSP(WebService):
                 #'precioRecupero' : line.price_unit, #Optional
                 }
 
-            if int(beed_code) in (21, 99):
+            if int(breed_code) in (21, 99):
                 vals['raza'].update({'detalle' : species.name})
 
             if tax:

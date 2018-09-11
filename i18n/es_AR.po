@@ -18,7 +18,7 @@ msgstr ""
 "Language: es_419\n"
 
 #. module: l10n_ar_wslsp
-#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:118
+#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:119
 #, python-format
 msgid "Activity Date is greater than today"
 msgstr "La fecha de inicio de actividad es mayor que la fecha de hoy"
@@ -31,12 +31,17 @@ msgid "Alive Kilo"
 msgstr "Kilo Vivo"
 
 #. module: l10n_ar_wslsp
-#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:255
+#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:270
 #, python-format
 msgid "An unexpected error has occurred!! \n"
 ""
 msgstr "Ha ocurrido un error inesperado!!\n"
 ""
+
+#. module: l10n_ar_wslsp
+#: model:ir.ui.menu,name:l10n_ar_wslsp.menu_action_autoliquidation
+msgid "Autoliquidation"
+msgstr "Autoliquidación"
 
 #. module: l10n_ar_wslsp
 #: field:account.invoice,aut_lsp:0
@@ -56,6 +61,11 @@ msgid "Billing Type"
 msgstr "Tipo de Facturación"
 
 #. module: l10n_ar_wslsp
+#: field:account.invoice.line,breed_id:0
+msgid "Breed"
+msgstr "Raza"
+
+#. module: l10n_ar_wslsp
 #: view:wslsp.config:l10n_ar_wslsp.view_wslsp_config_form
 #: field:wslsp.config,breed_ids:0
 msgid "Breeds"
@@ -68,7 +78,7 @@ msgid "Categories"
 msgstr "Categorias"
 
 #. module: l10n_ar_wslsp
-#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:177
+#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:178
 #, python-format
 msgid "Chore Date is less than Receipt Date"
 msgstr "La fecha de faena es menor que la fecha de recepción"
@@ -94,6 +104,11 @@ msgid "Code"
 msgstr "Código"
 
 #. module: l10n_ar_wslsp
+#: model:ir.model,name:l10n_ar_wslsp.model_res_company
+msgid "Companies"
+msgstr "Compañías"
+
+#. module: l10n_ar_wslsp
 #: code:addons/l10n_ar_wslsp/models/wslsp.py:95
 #, python-format
 msgid "Company Error!"
@@ -108,12 +123,12 @@ msgstr "Nombre de la Compañía"
 #: view:wslsp.config:l10n_ar_wslsp.view_wslsp_config_form
 #: view:wslsp.config:l10n_ar_wslsp.view_wslsp_config_tree
 msgid "Config WSLSP"
-msgstr "Configuración WSLSP"
+msgstr "Config WSLSP"
 
 #. module: l10n_ar_wslsp
 #: model:ir.model,name:l10n_ar_wslsp.model_wslsp_config
 msgid "Configuration for WSLSP"
-msgstr "Configuración para WSLSP"
+msgstr "Configuracion para WSLSP"
 
 #. module: l10n_ar_wslsp
 #: field:wslsp.breed.codes,create_uid:0
@@ -159,12 +174,17 @@ msgid "Cuts"
 msgstr "Cortes"
 
 #. module: l10n_ar_wslsp
+#: field:account.invoice,dte:0
+msgid "DTE"
+msgstr "DTE"
+
+#. module: l10n_ar_wslsp
 #: field:wslsp.voucher_type.codes,denomination_id:0
 msgid "Denomination"
 msgstr "Denominación"
 
 #. module: l10n_ar_wslsp
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:57
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:62
 #, python-format
 msgid "Denomination not set in invoice"
 msgstr "La Denominacion no establecida en factura"
@@ -206,26 +226,26 @@ msgid "Document Type"
 msgstr "Tipo de Documento"
 
 #. module: l10n_ar_wslsp
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:64
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:263
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:69
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:268
 #, python-format
 msgid "Error"
 msgstr "Error"
 
 #. module: l10n_ar_wslsp
-#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:250
+#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:265
 #, python-format
 msgid "Error [%s] \n"
-" Descriptión: %s \n"
+" Description: %s \n"
 "\n"
 ""
 msgstr "Error [%s] \n"
-" Descripción: %s \n"
+" Descripcion: %s \n"
 "\n"
 ""
 
 #. module: l10n_ar_wslsp
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:304
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:309
 #, python-format
 msgid "Error received was: \n"
 " %s"
@@ -233,26 +253,26 @@ msgstr "El error recibido fue: \n"
 " %s"
 
 #. module: l10n_ar_wslsp
-#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:203
+#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:218
 #, python-format
 msgid "Error when getting instance with key %s"
 msgstr "Error al obtener una instancia con key %s"
 
 #. module: l10n_ar_wslsp
-#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:673
+#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:699
 #, python-format
 msgid "Error when validating the invoice. Please, see it and send the invoice again!"
 msgstr "Error al validar la factura. ¡Por favor, corrija los errores y envíe la factura nuevamente!"
 
 #. module: l10n_ar_wslsp
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:57
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:60
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:105
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:109
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:113
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:119
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:125
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:141
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:62
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:65
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:110
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:114
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:118
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:124
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:130
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:146
 #, python-format
 msgid "Error!"
 msgstr "Error!"
@@ -262,6 +282,11 @@ msgstr "Error!"
 #: field:wslsp.config,expenses_ids:0
 msgid "Expenses"
 msgstr "Gastos"
+
+#. module: l10n_ar_wslsp
+#: field:account.invoice,guide:0
+msgid "Guide"
+msgstr "Guia"
 
 #. module: l10n_ar_wslsp
 #: field:wslsp.config,homologation:0
@@ -290,43 +315,55 @@ msgid "If true, there will be some validations that are disabled, for example, i
 msgstr "Si es verdadero, habrá algunas validaciones que están deshabilitadas, por ejemplo, correlación de número de factura"
 
 #. module: l10n_ar_wslsp
-#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:172
+#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:173
 #, python-format
 msgid "Invalid Chore Date"
 msgstr "Fecha de faena inválida"
 
 #. module: l10n_ar_wslsp
-#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:125
+#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:198
+#, python-format
+msgid "Invalid DTE!"
+msgstr "DTE Inválido!"
+
+#. module: l10n_ar_wslsp
+#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:126
 #, python-format
 msgid "Invalid Invoice Date"
 msgstr "Fecha de Factura inválida"
 
 #. module: l10n_ar_wslsp
-#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:148
+#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:149
 #, python-format
 msgid "Invalid Operation Date"
 msgstr "Fecha de operación inválida"
 
 #. module: l10n_ar_wslsp
-#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:236
+#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:251
 #, python-format
 msgid "Invalid Query Data"
 msgstr "Datos de consulta inválidos"
 
 #. module: l10n_ar_wslsp
-#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:165
+#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:166
 #, python-format
 msgid "Invalid Receipt Date"
 msgstr "Fecha de Recepción inválida"
 
 #. module: l10n_ar_wslsp
-#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:160
+#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:161
 #, python-format
 msgid "Invalid Reception Date"
 msgstr "Fecha de Recepción Inválida"
 
 #. module: l10n_ar_wslsp
-#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:114
+#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:205
+#, python-format
+msgid "Invalid Renspa!"
+msgstr "Renspa Inválido!"
+
+#. module: l10n_ar_wslsp
+#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:115
 #, python-format
 msgid "Invalid start activity date"
 msgstr "Fecha de inicio de actividades inválida"
@@ -337,7 +374,7 @@ msgid "Invoice"
 msgstr "Factura"
 
 #. module: l10n_ar_wslsp
-#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:139
+#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:140
 #, python-format
 msgid "Invoice Date difference with today should be less than 10 days for product sales."
 msgstr "Invoice Date difference with today should be less than 10 days for product sales."
@@ -348,7 +385,7 @@ msgid "Invoice Line"
 msgstr "Línea de factura"
 
 #. module: l10n_ar_wslsp
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:43
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:48
 #, python-format
 msgid "Invoice does not have a ranch purchase data associated"
 msgstr "Factura no tiene asociados datos de compra"
@@ -407,7 +444,7 @@ msgid "Last Updated on"
 msgstr "Ultima actualizacion en"
 
 #. module: l10n_ar_wslsp
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:358
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:363
 #, python-format
 msgid "Line Invoice [%s] does not have a ranch purchase data associated"
 msgstr "La factura de línea [%s] no tiene asociados los datos de compra"
@@ -430,6 +467,11 @@ msgid "Name"
 msgstr "Nombre"
 
 #. module: l10n_ar_wslsp
+#: field:res.company,ruca:0
+msgid "Nro Ruca"
+msgstr "Nro Ruca"
+
+#. module: l10n_ar_wslsp
 #: view:wslsp.config:l10n_ar_wslsp.view_wslsp_config_form
 #: field:wslsp.config,operation_ids:0
 msgid "Operations"
@@ -438,7 +480,7 @@ msgstr "Operaciones "
 #. module: l10n_ar_wslsp
 #: view:wslsp.config:l10n_ar_wslsp.view_wslsp_config_form
 msgid "Participant Character"
-msgstr "Caracter Participante"
+msgstr "Miembro Participe"
 
 #. module: l10n_ar_wslsp
 #: field:wslsp.config,participant_character_ids:0
@@ -453,7 +495,7 @@ msgid "Performance"
 msgstr "Rendimiento"
 
 #. module: l10n_ar_wslsp
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:61
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:66
 #, python-format
 msgid "Point of sale has not the same denomination as the invoice."
 msgstr "El punto de venta no tiene la misma denominación que la factura"
@@ -469,7 +511,7 @@ msgid "Points of Sale"
 msgstr "Puntos de Venta"
 
 #. module: l10n_ar_wslsp
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:139
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:144
 #, python-format
 msgid "Pos not found for invoice `%s` (id: %s)"
 msgstr "Punto de Venta no encontrado para la factura `%s` (id: %s)"
@@ -479,6 +521,16 @@ msgstr "Punto de Venta no encontrado para la factura `%s` (id: %s)"
 #: field:wslsp.config,province_ids:0
 msgid "Provinces"
 msgstr "Provincias"
+
+#. module: l10n_ar_wslsp
+#: field:account.invoice,po_ids:0
+msgid "Purchase Orders"
+msgstr "Ordenes de Compra"
+
+#. module: l10n_ar_wslsp
+#: field:account.invoice,renspa:0
+msgid "Renspa"
+msgstr "Renspa"
 
 #. module: l10n_ar_wslsp
 #: selection:wslsp.voucher_type.codes,document_type:0
@@ -501,19 +553,19 @@ msgid "Taxes"
 msgstr "Impuestos"
 
 #. module: l10n_ar_wslsp
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:264
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:269
 #, python-format
 msgid "The Invoice Number should be the format XXXX-XXXXXXXX"
 msgstr "El número de factura debe ser el formato XXXX-XXXXXXXX"
 
 #. module: l10n_ar_wslsp
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:65
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:70
 #, python-format
 msgid "The invoice denomination does not corresponds with this fiscal position."
 msgstr "La denominación de la factura no corresponde a esta posición fiscal"
 
 #. module: l10n_ar_wslsp
-#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:188
+#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:189
 #, python-format
 msgid "The next number in the system [%d] does not match the one obtained from AFIP WSLSP [%d]"
 msgstr "El siguiente número en el sistema es el [%d] pero no corresponde con el proximo numero para AFIP WSLSP [%d]"
@@ -543,16 +595,16 @@ msgid "The wslsp does not have a configuration for the operations [%s]"
 msgstr "El wslsp no tiene una configuracion para las operaciones [%s]"
 
 #. module: l10n_ar_wslsp
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:92
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:97
 #, python-format
 msgid "There are duplicated voucher types"
 msgstr "Hay tipos de voucher duplicados"
 
 #. module: l10n_ar_wslsp
-#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:131
+#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:132
 #, python-format
 msgid "There is another Invoice with a most recent date [%s] for the same Point of Sale and Denomination."
-msgstr "Hay otra Factura con una fecha más reciente [%s] para el mismo Punto de Venta y Denominación."
+msgstr "Hay otra factura con mayor fecha [%s] para el mismo Punto de Venta y Denominación."
 
 #. module: l10n_ar_wslsp
 #: code:addons/l10n_ar_wslsp/models/ranch_expenses_type.py:33
@@ -576,7 +628,7 @@ msgid "There is no company being used by this user"
 msgstr "No hay ninguna compañía siendo utilizada por este usuario"
 
 #. module: l10n_ar_wslsp
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:89
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:94
 #, python-format
 msgid "There is not configured voucher type with document[%s] Is Direct[%s] Denomination[%s]"
 msgstr "No hay un tipo de comprobante configurado con el documento [%s] Es directo [%s] Denominación [%s]"
@@ -592,7 +644,7 @@ msgid "URL for WSLSP"
 msgstr "URL para WSLSP"
 
 #. module: l10n_ar_wslsp
-#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:153
+#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:154
 #, python-format
 msgid "Voucher Date is less that Operation Date"
 msgstr "La Fecha del Comprobante es menor que la Fecha de Operación"
@@ -601,28 +653,35 @@ msgstr "La Fecha del Comprobante es menor que la Fecha de Operación"
 #: view:wslsp.config:l10n_ar_wslsp.view_wslsp_config_form
 #: field:wslsp.config,voucher_type_ids:0
 msgid "Voucher Types"
-msgstr "Tipo de Comprobantes"
+msgstr "Tipo de vauchers"
 
 #. module: l10n_ar_wslsp
-#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:114
-#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:118
-#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:125
-#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:138
-#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:148
-#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:152
-#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:160
-#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:165
-#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:172
-#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:176
-#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:187
+#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:115
+#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:119
+#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:126
+#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:139
+#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:149
+#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:153
+#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:161
+#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:166
+#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:173
+#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:177
+#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:188
+#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:198
+#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:205
 #, python-format
 msgid "WSFE Error!"
 msgstr "WSFE Error!"
 
 #. module: l10n_ar_wslsp
+#: model:ir.actions.act_window,name:l10n_ar_wslsp.action_wslsp_autoliquidation
+msgid "WSLSP Autoliquidation"
+msgstr "WSLSP Autoliquidation"
+
+#. module: l10n_ar_wslsp
 #: model:ir.model,name:l10n_ar_wslsp.model_wslsp_breed_codes
 msgid "WSLSP Breed Codes"
-msgstr "WSLSP Codigos de Raza"
+msgstr "WSLSP Codigos e raza"
 
 #. module: l10n_ar_wslsp
 #: view:wslsp.config:l10n_ar_wslsp.view_wslsp_config_form
@@ -642,7 +701,7 @@ msgstr "WSLSP Codigos de Categoria"
 #. module: l10n_ar_wslsp
 #: model:ir.actions.act_window,name:l10n_ar_wslsp.action_wslsp_config
 msgid "WSLSP Config"
-msgstr "WSLSP Configuración"
+msgstr "WSLSP Config"
 
 #. module: l10n_ar_wslsp
 #: code:addons/l10n_ar_wslsp/models/wslsp.py:99
@@ -662,22 +721,22 @@ msgstr "WSLSP Configuración"
 #. module: l10n_ar_wslsp
 #: model:ir.model,name:l10n_ar_wslsp.model_wslsp_cut_codes
 msgid "WSLSP Cut Codes"
-msgstr "WSLSP Código de Cortes"
+msgstr "WSLSP Cortar Codigos"
 
 #. module: l10n_ar_wslsp
 #: view:wslsp.config:l10n_ar_wslsp.view_wslsp_config_form
 msgid "WSLSP Cuts"
-msgstr "WSLSP Cortes"
+msgstr "WSLSP Cortar"
 
 #. module: l10n_ar_wslsp
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:42
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:88
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:92
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:357
-#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:130
-#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:202
-#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:236
-#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:262
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:47
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:93
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:97
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:362
+#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:131
+#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:217
+#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:251
+#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:277
 #, python-format
 msgid "WSLSP Error!"
 msgstr "WSLSP Error!"
@@ -693,7 +752,7 @@ msgid "WSLSP Expenses Codes"
 msgstr "WSLSP Codigos de Gastos"
 
 #. module: l10n_ar_wslsp
-#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:672
+#: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:698
 #, python-format
 msgid "WSLSP Invoice Error"
 msgstr "WSLSP Error de Factura"
@@ -721,7 +780,7 @@ msgstr "WSLSP Codigos de motivos"
 #. module: l10n_ar_wslsp
 #: model:ir.model,name:l10n_ar_wslsp.model_wslsp_operation_codes
 msgid "WSLSP Operation Codes"
-msgstr "WSLSP Codigos de operación"
+msgstr "WSLSP Codigos de operacion"
 
 #. module: l10n_ar_wslsp
 #: view:wslsp.config:l10n_ar_wslsp.view_wslsp_config_form
@@ -731,12 +790,12 @@ msgstr "WSLSP Operaciones"
 #. module: l10n_ar_wslsp
 #: view:wslsp.config:l10n_ar_wslsp.view_wslsp_config_form
 msgid "WSLSP Participant Character"
-msgstr "WSLSP Caracter Participante"
+msgstr "WSLSP Miembro participe"
 
 #. module: l10n_ar_wslsp
 #: model:ir.model,name:l10n_ar_wslsp.model_wslsp_participant_character_codes
 msgid "WSLSP Participant Character Codes"
-msgstr "WSLSP Códigos de Caracter Participante"
+msgstr "WSLSP Codigos de miembros participes"
 
 #. module: l10n_ar_wslsp
 #: model:ir.model,name:l10n_ar_wslsp.model_wslsp_province_codes
@@ -751,7 +810,7 @@ msgstr "WSLSP Provincias"
 #. module: l10n_ar_wslsp
 #: model:ir.model,name:l10n_ar_wslsp.model_wslsp_tax_codes
 msgid "WSLSP Tax Codes"
-msgstr "WSLSP Código de impuestos"
+msgstr "WSLSP Codigo de impuestos"
 
 #. module: l10n_ar_wslsp
 #: view:wslsp.config:l10n_ar_wslsp.view_wslsp_config_form
@@ -759,7 +818,7 @@ msgid "WSLSP Taxes"
 msgstr "WSLSP Impuestos"
 
 #. module: l10n_ar_wslsp
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:303
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:308
 #, python-format
 msgid "WSLSP Validation Error"
 msgstr "WSLSP Error de validación"
@@ -767,39 +826,39 @@ msgstr "WSLSP Error de validación"
 #. module: l10n_ar_wslsp
 #: model:ir.model,name:l10n_ar_wslsp.model_wslsp_voucher_type_codes
 msgid "WSLSP Voucher Type Codes"
-msgstr "WSLSP Codigos de tipo de Comprobantes"
+msgstr "WSLSP Codigos de tipo de voucher"
 
 #. module: l10n_ar_wslsp
 #: view:wslsp.config:l10n_ar_wslsp.view_wslsp_config_form
 msgid "WSLSP Voucher Types"
-msgstr "WSLSP Tipos de Comprobantes"
+msgstr "WSLSP Tipos de voucher"
 
 #. module: l10n_ar_wslsp
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:127
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:132
 #, python-format
 msgid "Wrong Number Sequence `%s` for invoice id: `%s`"
 msgstr "Secuencia de números incorrecta `%s` para factura id:`%s"
 
 #. module: l10n_ar_wslsp
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:114
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:119
 #, python-format
 msgid "Wrong Number Sequence for invoice id: `%s`"
 msgstr "Secuencia de numeros incorrecta para la factura id: `%s`"
 
 #. module: l10n_ar_wslsp
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:106
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:111
 #, python-format
 msgid "Wrong Number format for invoice id: `%s`"
 msgstr "Formato de numero incorrecto para la identificacion de la factura id: `%s`"
 
 #. module: l10n_ar_wslsp
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:120
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:125
 #, python-format
 msgid "Wrong POS `%s` for invoice id: `%s`"
 msgstr "Error POS `%s` para la factura id: `%s`"
 
 #. module: l10n_ar_wslsp
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:110
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:115
 #, python-format
 msgid "Wrong POS for invoice id: `%s`"
 msgstr "Error POS para la factura id: `%s`"
@@ -820,62 +879,68 @@ msgid "Wslsp config id"
 msgstr "Wslsp config id"
 
 #. module: l10n_ar_wslsp
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:236
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:241
 #, python-format
 msgid "You cannot cancel an Electronic livestock sector liquidation because it has been informed to AFIP."
 msgstr "No puede cancelar una liquidación electrónica del sector ganadero porque ha sido informada a la AFIP."
 
 #. module: l10n_ar_wslsp
+#: view:account.invoice:l10n_ar_wslsp.view_wslsp_cattle_form
+msgid "{'required' : ['|',('purchase_data_id','!=',False),('purchase_data_type', '=', 'performance')]}"
+msgstr "{'required' : ['|',('purchase_data_id','!=',False),('purchase_data_type', '=', 'performance')]}"
+
+#. module: l10n_ar_wslsp
 #: view:wslsp.config:l10n_ar_wslsp.view_wslsp_config_form
 msgid "⇒Get Breeds"
-msgstr "⇒Obtener Razas"
+msgstr "⇒Obtener razas"
 
 #. module: l10n_ar_wslsp
 #: view:wslsp.config:l10n_ar_wslsp.view_wslsp_config_form
 msgid "⇒Get Categories"
-msgstr "⇒Obtener Categorias"
+msgstr "⇒Obtener categorias"
 
 #. module: l10n_ar_wslsp
 #: view:wslsp.config:l10n_ar_wslsp.view_wslsp_config_form
 msgid "⇒Get Cuts"
-msgstr "⇒Obtener Cortes"
+msgstr "⇒Obtener cortes"
 
 #. module: l10n_ar_wslsp
 #: view:wslsp.config:l10n_ar_wslsp.view_wslsp_config_form
 msgid "⇒Get Expenses"
-msgstr "⇒Obtener Gastos"
+msgstr "⇒Obtener gastos"
 
 #. module: l10n_ar_wslsp
 #: view:wslsp.config:l10n_ar_wslsp.view_wslsp_config_form
 msgid "⇒Get Liquidation Types"
-msgstr "⇒Obtener Tipos de liquidacion"
+msgstr "⇒Obtener tipos de liquidacion"
 
 #. module: l10n_ar_wslsp
 #: view:wslsp.config:l10n_ar_wslsp.view_wslsp_config_form
 msgid "⇒Get Motives"
-msgstr "⇒Obtener Motivos"
+msgstr "⇒Obtener motivos"
 
 #. module: l10n_ar_wslsp
 #: view:wslsp.config:l10n_ar_wslsp.view_wslsp_config_form
 msgid "⇒Get Operations"
-msgstr "⇒Obtener Operaciones"
+msgstr "⇒Obtener operaciones"
 
 #. module: l10n_ar_wslsp
 #: view:wslsp.config:l10n_ar_wslsp.view_wslsp_config_form
 msgid "⇒Get Participant Characters"
-msgstr "⇒Obtener Caracter Participante"
+msgstr "⇒Obtener miembros participes"
 
 #. module: l10n_ar_wslsp
 #: view:wslsp.config:l10n_ar_wslsp.view_wslsp_config_form
 msgid "⇒Get Provinces"
-msgstr "⇒Obtener Provincias"
+msgstr "⇒Obtener provincias"
 
 #. module: l10n_ar_wslsp
 #: view:wslsp.config:l10n_ar_wslsp.view_wslsp_config_form
 msgid "⇒Get Taxes"
-msgstr "⇒Obtener Impuestos"
+msgstr "⇒Obtener impuestos"
 
 #. module: l10n_ar_wslsp
 #: view:wslsp.config:l10n_ar_wslsp.view_wslsp_config_form
 msgid "⇒Get Voucher Types"
-msgstr "⇒Obtener Tipos de Comprobantes"
+msgstr "⇒Obtener tipos de voucher"
+

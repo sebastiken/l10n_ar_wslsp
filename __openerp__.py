@@ -29,6 +29,7 @@
     "depends": ["rafalim_cattle_account", "l10n_ar_wsfe"],
     "data": [
         "data/wslsp_data.xml",
+        "views/company_view.xml",
         "views/wslsp_view.xml",
         "views/ranch_expenses_type_view.xml",
         "views/ranch_species_view.xml",
