@@ -48,11 +48,12 @@ class AccountInvoice(models.Model):
                     _("Invoice does not have a ranch purchase data associated"))
         return self.purchase_data_id
 
-    @api.model
     def _check_fiscal_values(self):
         self.ensure_one()
         invtype = self.type
-        if not(invtype == 'in_invoice' and self.purchase_data_id):
+        ranch_type = self.purchase_data_id.ranch_type
+        performance = self.purchase_data_id.billing_type == 'performance'
+        if invtype != 'in_invoice' or not (performance and ranch_type == 'cattle'):
             res = super(AccountInvoice, self)._check_fiscal_values()
             return res
 
@@ -249,8 +250,9 @@ class AccountInvoice(models.Model):
         for inv in self:
             invtype = self.type
             purchase_data = inv.purchase_data_id
+            ranch_type = purchase_data.ranch_type
             performance = purchase_data.billing_type == 'performance'
-            if invtype != 'in_invoice' or not performance:
+            if invtype != 'in_invoice' or not (performance and ranch_type == 'cattle'):
                 res = super(AccountInvoice, inv).action_number()
                 continue
             inv._check_fiscal_values()
