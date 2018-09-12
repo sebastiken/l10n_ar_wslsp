@@ -196,6 +196,16 @@
                                     </tree>
                                 </field>
                             </page>
+                            <page string="WSFE Requests">
+                                <field name="wsfe_request_ids" readonly="1">
+                                    <tree string="WSFE Request Details">
+                                        <field name="voucher_date"/>
+                                        <field name="voucher_number"/>
+                                        <field name="result"/>
+                                        <field name="observations"/>
+                                    </tree>
+                                </field>
+                            </page>
                             <page string="Payment System Terms">
                                 <group>
                                     <field name="payment_system_term_ids" nolabel="1" attrs="{'readonly': [('state', 'in', ('cancel', 'paid'))],
