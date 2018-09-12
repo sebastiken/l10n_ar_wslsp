@@ -26,7 +26,9 @@
     'version': "8.0.1.0.0",
     "author": "Eynes",
     "description": "AFIP livestock sector liquidation webservice (LSLWS - WSLSP) management",
-    "depends": ["rafalim_cattle_account", "l10n_ar_wsfe", "rafalim_payment_system"],
+    "depends": ["rafalim_cattle_account",
+                "l10n_ar_wsfe",
+                "rafalim_payment_system"],
     "data": [
         "data/wslsp_data.xml",
         "views/company_view.xml",
@@ -34,6 +36,7 @@
         "views/ranch_expenses_type_view.xml",
         "views/ranch_species_view.xml",
         "views/account_invoice_view.xml",
+        "security/ir.model.access.csv",
     ],
     "installable": True,
     "application": True,

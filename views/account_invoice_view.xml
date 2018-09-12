@@ -288,10 +288,11 @@
         </record>
 
         <menuitem id="menu_action_autoliquidation"
-            parent="rafalim_cattle_account.menu_root_ranch"
+            parent="rafalim_cattle_ranch.ranch_menu_root_base"
             name="Autoliquidation"
-            sequence="1"
-            action="action_wslsp_autoliquidation" />
+            sequence="101"
+            groups="rafalim_cattle_ranch.group_ranch_responsible"
+            action="action_wslsp_autoliquidation"/>
 
 
     </data>
