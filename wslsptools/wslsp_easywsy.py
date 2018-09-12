@@ -757,6 +757,7 @@ class WSLSP(WebService):
             'amount_total': res.get('amount_total'),
             'cae': res.get('CAE'),
             'cae_duedate': res.get('CAE_due_date'),
+            'observations': errs,
             'result' : result,
         }
 
