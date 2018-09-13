@@ -18,6 +18,11 @@ msgstr ""
 "Language: es_419\n"
 
 #. module: l10n_ar_wslsp
+#: view:account.invoice:l10n_ar_wslsp.view_invoice_wslsp_purchase_data_form
+msgid "(update)"
+msgstr "(actualizar)"
+
+#. module: l10n_ar_wslsp
 #: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:119
 #, python-format
 msgid "Activity Date is greater than today"
@@ -29,6 +34,11 @@ msgstr "La fecha de inicio de actividad es mayor que la fecha de hoy"
 #: selection:wslsp.operation.codes,billing_type:0
 msgid "Alive Kilo"
 msgstr "Kilo Vivo"
+
+#. module: l10n_ar_wslsp
+#: view:account.invoice:l10n_ar_wslsp.view_invoice_wslsp_purchase_data_form
+msgid "Amounts"
+msgstr "Montos"
 
 #. module: l10n_ar_wslsp
 #: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:270
@@ -70,6 +80,16 @@ msgstr "Raza"
 #: field:wslsp.config,breed_ids:0
 msgid "Breeds"
 msgstr "Razas"
+
+#. module: l10n_ar_wslsp
+#: view:account.invoice:l10n_ar_wslsp.view_invoice_wslsp_purchase_data_form
+msgid "CAI"
+msgstr "CAI"
+
+#. module: l10n_ar_wslsp
+#: view:account.invoice:l10n_ar_wslsp.view_invoice_wslsp_purchase_data_form
+msgid "Cancel Invoice"
+msgstr "Cancelar factura"
 
 #. module: l10n_ar_wslsp
 #: view:wslsp.config:l10n_ar_wslsp.view_wslsp_config_form
@@ -123,7 +143,7 @@ msgstr "Nombre de la Compañía"
 #: view:wslsp.config:l10n_ar_wslsp.view_wslsp_config_form
 #: view:wslsp.config:l10n_ar_wslsp.view_wslsp_config_tree
 msgid "Config WSLSP"
-msgstr "Config WSLSP"
+msgstr "Configuración WSLSP"
 
 #. module: l10n_ar_wslsp
 #: model:ir.model,name:l10n_ar_wslsp.model_wslsp_config
@@ -184,7 +204,7 @@ msgid "Denomination"
 msgstr "Denominación"
 
 #. module: l10n_ar_wslsp
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:62
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:63
 #, python-format
 msgid "Denomination not set in invoice"
 msgstr "La Denominacion no establecida en factura"
@@ -226,8 +246,18 @@ msgid "Document Type"
 msgstr "Tipo de Documento"
 
 #. module: l10n_ar_wslsp
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:69
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:268
+#: view:account.invoice:l10n_ar_wslsp.view_invoice_wslsp_purchase_data_form
+msgid "Draft Invoice"
+msgstr "Factura borrador"
+
+#. module: l10n_ar_wslsp
+#: view:account.invoice:l10n_ar_wslsp.view_invoice_wslsp_purchase_data_form
+msgid "Draft Refund"
+msgstr "Borrador de nota de crédito"
+
+#. module: l10n_ar_wslsp
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:70
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:270
 #, python-format
 msgid "Error"
 msgstr "Error"
@@ -245,7 +275,7 @@ msgstr "Error [%s] \n"
 ""
 
 #. module: l10n_ar_wslsp
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:309
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:311
 #, python-format
 msgid "Error received was: \n"
 " %s"
@@ -265,14 +295,14 @@ msgid "Error when validating the invoice. Please, see it and send the invoice ag
 msgstr "Error al validar la factura. ¡Por favor, corrija los errores y envíe la factura nuevamente!"
 
 #. module: l10n_ar_wslsp
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:62
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:65
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:110
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:114
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:118
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:124
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:130
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:146
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:63
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:66
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:111
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:115
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:119
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:125
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:131
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:147
 #, python-format
 msgid "Error!"
 msgstr "Error!"
@@ -313,6 +343,11 @@ msgstr "ID"
 #: help:wslsp.config,homologation:0
 msgid "If true, there will be some validations that are disabled, for example, invoice number correlativeness"
 msgstr "Si es verdadero, habrá algunas validaciones que están deshabilitadas, por ejemplo, correlación de número de factura"
+
+#. module: l10n_ar_wslsp
+#: view:account.invoice:l10n_ar_wslsp.view_invoice_wslsp_purchase_data_form
+msgid "Information"
+msgstr "Information"
 
 #. module: l10n_ar_wslsp
 #: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:173
@@ -369,6 +404,7 @@ msgid "Invalid start activity date"
 msgstr "Fecha de inicio de actividades inválida"
 
 #. module: l10n_ar_wslsp
+#: view:account.invoice:l10n_ar_wslsp.view_invoice_wslsp_purchase_data_form
 #: model:ir.model,name:l10n_ar_wslsp.model_account_invoice
 msgid "Invoice"
 msgstr "Factura"
@@ -391,9 +427,19 @@ msgid "Invoice does not have a ranch purchase data associated"
 msgstr "Factura no tiene asociados datos de compra"
 
 #. module: l10n_ar_wslsp
+#: view:account.invoice:l10n_ar_wslsp.view_invoice_wslsp_purchase_data_form
+msgid "Invoice lines"
+msgstr "Líneas de factura"
+
+#. module: l10n_ar_wslsp
 #: field:wslsp.voucher_type.codes,is_direct:0
 msgid "Is Direct?"
 msgstr "Es directo?"
+
+#. module: l10n_ar_wslsp
+#: view:account.invoice:l10n_ar_wslsp.view_invoice_wslsp_purchase_data_form
+msgid "Keep date empty if the date is the same as the invoice."
+msgstr "Dejar vacío si la fecha es la misma que la de la factura."
 
 #. module: l10n_ar_wslsp
 #: field:wslsp.breed.codes,__last_update:0
@@ -444,7 +490,7 @@ msgid "Last Updated on"
 msgstr "Ultima actualizacion en"
 
 #. module: l10n_ar_wslsp
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:363
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:365
 #, python-format
 msgid "Line Invoice [%s] does not have a ranch purchase data associated"
 msgstr "La factura de línea [%s] no tiene asociados los datos de compra"
@@ -478,6 +524,11 @@ msgid "Operations"
 msgstr "Operaciones "
 
 #. module: l10n_ar_wslsp
+#: view:account.invoice:l10n_ar_wslsp.view_invoice_wslsp_purchase_data_form
+msgid "Other Info"
+msgstr "Otra información"
+
+#. module: l10n_ar_wslsp
 #: view:wslsp.config:l10n_ar_wslsp.view_wslsp_config_form
 msgid "Participant Character"
 msgstr "Miembro Participe"
@@ -488,6 +539,36 @@ msgid "Participant characters"
 msgstr "Caracter Participante"
 
 #. module: l10n_ar_wslsp
+#: view:account.invoice:l10n_ar_wslsp.view_invoice_wslsp_purchase_data_form
+msgid "Payment Date"
+msgstr "Fecha de pago"
+
+#. module: l10n_ar_wslsp
+#: view:account.invoice:l10n_ar_wslsp.view_invoice_wslsp_purchase_data_form
+msgid "Payment System Terms"
+msgstr "Forma de Pago del Circuito"
+
+#. module: l10n_ar_wslsp
+#: view:account.invoice:l10n_ar_wslsp.view_invoice_wslsp_purchase_data_form
+msgid "Payments"
+msgstr "Pagos"
+
+#. module: l10n_ar_wslsp
+#: view:account.invoice:l10n_ar_wslsp.view_invoice_wslsp_purchase_data_form
+msgid "Perception Lines"
+msgstr "Líneas de percepciones"
+
+#. module: l10n_ar_wslsp
+#: view:account.invoice:l10n_ar_wslsp.view_invoice_wslsp_purchase_data_form
+msgid "Perception Type"
+msgstr "Tipo de percepción"
+
+#. module: l10n_ar_wslsp
+#: view:account.invoice:l10n_ar_wslsp.view_invoice_wslsp_purchase_data_form
+msgid "Perceptions"
+msgstr "Percepciones"
+
+#. module: l10n_ar_wslsp
 #: selection:wslsp.liquidation_type.codes,billing_type:0
 #: selection:wslsp.motive.codes,billing_type:0
 #: selection:wslsp.operation.codes,billing_type:0
@@ -495,7 +576,7 @@ msgid "Performance"
 msgstr "Rendimiento"
 
 #. module: l10n_ar_wslsp
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:66
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:67
 #, python-format
 msgid "Point of sale has not the same denomination as the invoice."
 msgstr "El punto de venta no tiene la misma denominación que la factura"
@@ -511,7 +592,7 @@ msgid "Points of Sale"
 msgstr "Puntos de Venta"
 
 #. module: l10n_ar_wslsp
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:144
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:145
 #, python-format
 msgid "Pos not found for invoice `%s` (id: %s)"
 msgstr "Punto de Venta no encontrado para la factura `%s` (id: %s)"
@@ -528,14 +609,60 @@ msgid "Purchase Orders"
 msgstr "Ordenes de Compra"
 
 #. module: l10n_ar_wslsp
+#: view:account.invoice:l10n_ar_wslsp.view_invoice_wslsp_purchase_data_form
+msgid "Ranch"
+msgstr "Hacienda"
+
+#. module: l10n_ar_wslsp
+#: view:account.invoice:l10n_ar_wslsp.view_invoice_wslsp_purchase_data_form
+msgid "Ranch Invoice"
+msgstr "Factura de Hacienda"
+
+#. module: l10n_ar_wslsp
+#: view:account.invoice:l10n_ar_wslsp.view_invoice_wslsp_purchase_data_form
+msgid "Re-Open"
+msgstr "Reabrir"
+
+#. module: l10n_ar_wslsp
+#: view:account.invoice:l10n_ar_wslsp.view_invoice_wslsp_purchase_data_form
+msgid "Recompute taxes and total"
+msgstr "Recalcular total e impuestos"
+
+#. module: l10n_ar_wslsp
+#: view:account.invoice:l10n_ar_wslsp.view_invoice_wslsp_purchase_data_form
+msgid "Refund"
+msgstr "Reembolso"
+
+#. module: l10n_ar_wslsp
 #: field:account.invoice,renspa:0
 msgid "Renspa"
 msgstr "Renspa"
 
 #. module: l10n_ar_wslsp
+#: view:account.invoice:l10n_ar_wslsp.view_invoice_wslsp_purchase_data_form
+msgid "Responsible"
+msgstr "Responsable"
+
+#. module: l10n_ar_wslsp
+#: view:account.invoice:l10n_ar_wslsp.view_invoice_wslsp_purchase_data_form
+msgid "Set to Draft"
+msgstr "Establecer como Borrador"
+
+#. module: l10n_ar_wslsp
+#: view:account.invoice:l10n_ar_wslsp.view_invoice_wslsp_purchase_data_form
+msgid "Supplier"
+msgstr "Proveedor"
+
+#. module: l10n_ar_wslsp
+#: view:account.invoice:l10n_ar_wslsp.view_invoice_wslsp_purchase_data_form
 #: selection:wslsp.voucher_type.codes,document_type:0
 msgid "Supplier Invoice"
-msgstr "Factura del proveedor"
+msgstr "Factura de proveedor"
+
+#. module: l10n_ar_wslsp
+#: view:account.invoice:l10n_ar_wslsp.view_invoice_wslsp_purchase_data_form
+msgid "Supported Perceptions"
+msgstr "Percepciones soportadas"
 
 #. module: l10n_ar_wslsp
 #: help:wslsp.config,cuit:0
@@ -548,18 +675,19 @@ msgid "Tax Types"
 msgstr "Tipos de impuesto"
 
 #. module: l10n_ar_wslsp
+#: view:account.invoice:l10n_ar_wslsp.view_invoice_wslsp_purchase_data_form
 #: view:wslsp.config:l10n_ar_wslsp.view_wslsp_config_form
 msgid "Taxes"
 msgstr "Impuestos"
 
 #. module: l10n_ar_wslsp
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:269
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:271
 #, python-format
 msgid "The Invoice Number should be the format XXXX-XXXXXXXX"
 msgstr "El número de factura debe ser el formato XXXX-XXXXXXXX"
 
 #. module: l10n_ar_wslsp
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:70
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:71
 #, python-format
 msgid "The invoice denomination does not corresponds with this fiscal position."
 msgstr "La denominación de la factura no corresponde a esta posición fiscal"
@@ -595,7 +723,7 @@ msgid "The wslsp does not have a configuration for the operations [%s]"
 msgstr "El wslsp no tiene una configuracion para las operaciones [%s]"
 
 #. module: l10n_ar_wslsp
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:97
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:98
 #, python-format
 msgid "There are duplicated voucher types"
 msgstr "Hay tipos de voucher duplicados"
@@ -628,10 +756,15 @@ msgid "There is no company being used by this user"
 msgstr "No hay ninguna compañía siendo utilizada por este usuario"
 
 #. module: l10n_ar_wslsp
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:94
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:95
 #, python-format
 msgid "There is not configured voucher type with document[%s] Is Direct[%s] Denomination[%s]"
 msgstr "No hay un tipo de comprobante configurado con el documento [%s] Es directo [%s] Denominación [%s]"
+
+#. module: l10n_ar_wslsp
+#: view:account.invoice:l10n_ar_wslsp.view_invoice_wslsp_purchase_data_form
+msgid "This button only appears when the state of the invoice is 'paid' (showing that it has been fully reconciled) and auto-computed boolean 'reconciled' is False (depicting that it's not the case anymore). In other words, the invoice has been dereconciled and it does not fit anymore the 'paid' state. You should press this button to re-open it and let it continue its normal process after having resolved the eventual exceptions it may have created."
+msgstr "Este botón solo aparece cuando el estado de la factura es 'pagado' (mostrando que ha sido totalmente conciliado) y el campo booleano autocalculado 'pagado/conciliado' es falso (representa que ya no es el caso). En otras palabra, la conciliación de la factura ha sido rota y ya no está en estado 'pagado'. Debería presionar este botón para volver a abrir la factura y le permitirá continuar su proceso normal después de haber resuelto la excepción eventual que la puede haber producido."
 
 #. module: l10n_ar_wslsp
 #: field:wslsp.config,wsaa_ticket_id:0
@@ -642,6 +775,11 @@ msgstr "Acceso a tickets"
 #: field:wslsp.config,url:0
 msgid "URL for WSLSP"
 msgstr "URL para WSLSP"
+
+#. module: l10n_ar_wslsp
+#: view:account.invoice:l10n_ar_wslsp.view_invoice_wslsp_purchase_data_form
+msgid "Validate"
+msgstr "Validar"
 
 #. module: l10n_ar_wslsp
 #: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:154
@@ -674,6 +812,16 @@ msgid "WSFE Error!"
 msgstr "WSFE Error!"
 
 #. module: l10n_ar_wslsp
+#: view:account.invoice:l10n_ar_wslsp.view_invoice_wslsp_purchase_data_form
+msgid "WSFE Request Details"
+msgstr "WSLSP Detalles de Peticion"
+
+#. module: l10n_ar_wslsp
+#: view:account.invoice:l10n_ar_wslsp.view_invoice_wslsp_purchase_data_form
+msgid "WSFE Requests"
+msgstr "WSLSP Peticiones"
+
+#. module: l10n_ar_wslsp
 #: model:ir.actions.act_window,name:l10n_ar_wslsp.action_wslsp_autoliquidation
 msgid "WSLSP Autoliquidation"
 msgstr "WSLSP Autoliquidation"
@@ -681,7 +829,7 @@ msgstr "WSLSP Autoliquidation"
 #. module: l10n_ar_wslsp
 #: model:ir.model,name:l10n_ar_wslsp.model_wslsp_breed_codes
 msgid "WSLSP Breed Codes"
-msgstr "WSLSP Codigos e raza"
+msgstr "WSLSP Codigos de raza"
 
 #. module: l10n_ar_wslsp
 #: view:wslsp.config:l10n_ar_wslsp.view_wslsp_config_form
@@ -701,7 +849,7 @@ msgstr "WSLSP Codigos de Categoria"
 #. module: l10n_ar_wslsp
 #: model:ir.actions.act_window,name:l10n_ar_wslsp.action_wslsp_config
 msgid "WSLSP Config"
-msgstr "WSLSP Config"
+msgstr "WSLSP Configuración"
 
 #. module: l10n_ar_wslsp
 #: code:addons/l10n_ar_wslsp/models/wslsp.py:99
@@ -716,7 +864,7 @@ msgstr "WSLSP Error de Configuración!"
 #. module: l10n_ar_wslsp
 #: model:ir.ui.menu,name:l10n_ar_wslsp.wslsp_config_menu
 msgid "WSLSP Configuration"
-msgstr "WSLSP Configuración"
+msgstr "WSLSP Configuracion"
 
 #. module: l10n_ar_wslsp
 #: model:ir.model,name:l10n_ar_wslsp.model_wslsp_cut_codes
@@ -730,9 +878,9 @@ msgstr "WSLSP Cortar"
 
 #. module: l10n_ar_wslsp
 #: code:addons/l10n_ar_wslsp/models/account_invoice.py:47
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:93
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:97
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:362
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:94
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:98
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:364
 #: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:131
 #: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:217
 #: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:251
@@ -818,7 +966,7 @@ msgid "WSLSP Taxes"
 msgstr "WSLSP Impuestos"
 
 #. module: l10n_ar_wslsp
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:308
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:310
 #, python-format
 msgid "WSLSP Validation Error"
 msgstr "WSLSP Error de validación"
@@ -834,31 +982,31 @@ msgid "WSLSP Voucher Types"
 msgstr "WSLSP Tipos de voucher"
 
 #. module: l10n_ar_wslsp
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:132
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:133
 #, python-format
 msgid "Wrong Number Sequence `%s` for invoice id: `%s`"
 msgstr "Secuencia de números incorrecta `%s` para factura id:`%s"
 
 #. module: l10n_ar_wslsp
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:119
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:120
 #, python-format
 msgid "Wrong Number Sequence for invoice id: `%s`"
 msgstr "Secuencia de numeros incorrecta para la factura id: `%s`"
 
 #. module: l10n_ar_wslsp
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:111
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:112
 #, python-format
 msgid "Wrong Number format for invoice id: `%s`"
 msgstr "Formato de numero incorrecto para la identificacion de la factura id: `%s`"
 
 #. module: l10n_ar_wslsp
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:125
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:126
 #, python-format
 msgid "Wrong POS `%s` for invoice id: `%s`"
 msgstr "Error POS `%s` para la factura id: `%s`"
 
 #. module: l10n_ar_wslsp
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:115
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:116
 #, python-format
 msgid "Wrong POS for invoice id: `%s`"
 msgstr "Error POS para la factura id: `%s`"
@@ -879,15 +1027,15 @@ msgid "Wslsp config id"
 msgstr "Wslsp config id"
 
 #. module: l10n_ar_wslsp
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:241
+#: view:account.invoice:l10n_ar_wslsp.view_invoice_wslsp_purchase_data_form
+msgid "XXXX-XXXXXXXX"
+msgstr "XXXX-XXXXXXXX"
+
+#. module: l10n_ar_wslsp
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:242
 #, python-format
 msgid "You cannot cancel an Electronic livestock sector liquidation because it has been informed to AFIP."
 msgstr "No puede cancelar una liquidación electrónica del sector ganadero porque ha sido informada a la AFIP."
-
-#. module: l10n_ar_wslsp
-#: view:account.invoice:l10n_ar_wslsp.view_wslsp_cattle_form
-msgid "{'required' : ['|',('purchase_data_id','!=',False),('purchase_data_type', '=', 'performance')]}"
-msgstr "{'required' : ['|',('purchase_data_id','!=',False),('purchase_data_type', '=', 'performance')]}"
 
 #. module: l10n_ar_wslsp
 #: view:wslsp.config:l10n_ar_wslsp.view_wslsp_config_form

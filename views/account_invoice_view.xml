@@ -293,7 +293,7 @@
         </record>
 
         <menuitem id="menu_action_autoliquidation"
-            parent="rafalim_cattle_ranch.ranch_menu_root_base"
+            parent="rafalim_cattle_ranch.ranch_cattle_menu_root_base"
             name="Autoliquidation"
             sequence="101"
             groups="rafalim_cattle_ranch.group_ranch_responsible"
