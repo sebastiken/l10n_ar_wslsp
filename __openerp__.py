@@ -23,7 +23,7 @@
 {
     "name": "l10n_ar_wslsp",
     'category': "Others",
-    'version': "8.0.1.0.0",
+    'version': "8.0.1.0.1",
     "author": "Eynes",
     "description": "AFIP livestock sector liquidation webservice (LSLWS - WSLSP) management",
     "depends": ["rafalim_cattle_account",

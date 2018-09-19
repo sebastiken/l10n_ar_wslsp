@@ -30,8 +30,10 @@ class PurchaseData(models.Model):
         if act_type != 'ir.actions.act_window':
             return res
 
-        if self.billing_type == 'performance' \
-                and self.ranch_type == 'cattle':
+
+        invoice = self.invoice_ids and self.invoice_ids[0]
+
+        if invoice.is_lsp and self.ranch_type == 'cattle':
             form_view = self.env.ref('l10n_ar_wslsp.view_invoice_wslsp_purchase_data_form')
             tree_view = self.env.ref('account.invoice_tree')
             res_id = res.get('res_id', False)
