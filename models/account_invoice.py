@@ -40,6 +40,7 @@ class AccountInvoice(models.Model):
 
     aut_lsp = fields.Boolean('Autorize', default=False, help='Autorize liquidation to AFIP')
     purchase_data_type = fields.Selection(related='purchase_data_id.billing_type', string="Purchase Data Type", store=True)
+    is_lsp = fields.Boolean('Is LSP')
 
     @api.multi
     def _check_ranch_purchase(self):
