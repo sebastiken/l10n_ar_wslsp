@@ -267,17 +267,14 @@
             <field name="context">{'default_type': 'in_invoice', 'type': 'in_invoice', 'journal_type': 'purchase'}</field>
         </record>
 
-        <record model="ir.actions.act_window" id="rafalim_cattle_account.action_ranch_invoices">
+        <record model="ir.actions.act_window" id="rafalim_cattle_account.action_cattle_ranch_invoices">
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">account.invoice</field>
             <field name="domain">[
                 ('type','=','in_invoice'),
                 ('is_lsp', '=', False),
-                ('purchase_data_type', '!=', False),
-                '|',
-                    ('purchase_data_type', '!=', 'performance'),
-                    ('purchase_data_id.ranch_type', '!=', 'cattle')
-                ]</field>
+                ('purchase_data_id', '!=', False),
+                ('purchase_data_id.ranch_type', '=', 'cattle')]</field>
         </record>
 
 
