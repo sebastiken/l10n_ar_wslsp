@@ -16,12 +16,12 @@ import logging
 
 _logger = logging.getLogger(__name__)
 
-class PurchaseDataPerformanceWizard(models.TransientModel):
+class PurchaseDataPerformanceWizardd(models.TransientModel):
     _inherit = "ranch.purchase.data.invoice.wizardd"
 
     @api.multi
     def _finalize_invoice_vals(self, purchase_data, invoice_vals):
-        res = super(PurchaseDataPerformanceWizard, self).\
+        res = super(PurchaseDataPerformanceWizardd, self).\
             _finalize_invoice_vals(purchase_data,invoice_vals)
 
         # Check if it has to be lsp
@@ -34,7 +34,7 @@ class PurchaseDataPerformanceWizard(models.TransientModel):
 
     @api.multi
     def open_invoice(self):
-        res = super(PurchaseDataPerformanceWizard, self).open_invoice()
+        res = super(PurchaseDataPerformanceWizardd, self).open_invoice()
         if res and isinstance(res, dict):
             invoice_id = res.get('res_id', False)
             if not invoice_id:
