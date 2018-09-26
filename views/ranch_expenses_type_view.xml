@@ -7,7 +7,7 @@
             <field name="inherit_id" ref="rafalim_cattle_ranch.ranch_expenses_type_form_view"/>
             <field name="arch" type="xml">
                 <field name="amount_type" position="after">
-                    <field name="afip_code"/>
+                    <field name="afip_code_id"/>
                 </field>
             </field>
         </record>
@@ -17,7 +17,7 @@
             <field name="inherit_id" ref="rafalim_cattle_ranch.ranch_expenses_type_tree_view"/>
             <field name="arch" type="xml">
                 <field name="amount_type" position="after">
-                    <field name="afip_code"/>
+                    <field name="afip_code_id"/>
                 </field>
             </field>
         </record>

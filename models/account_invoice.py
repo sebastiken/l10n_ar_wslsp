@@ -34,6 +34,7 @@ class AccountInvoiceLine(models.Model):
     _inherit = 'account.invoice.line'
 
     breed_id = fields.Many2one('wslsp.breed.codes', 'Breed')
+    ranch_type = fields.Selection(related='invoice_id.purchase_data_id.ranch_type', string='Ranch Type')
 
 class AccountInvoice(models.Model):
     _inherit = 'account.invoice'
@@ -51,10 +52,7 @@ class AccountInvoice(models.Model):
 
     def _check_fiscal_values(self):
         self.ensure_one()
-        invtype = self.type
-        ranch_type = self.purchase_data_id.ranch_type
-        performance = self.purchase_data_id.billing_type == 'performance'
-        if invtype != 'in_invoice' or not (performance and ranch_type == 'cattle'):
+        if not self.is_lsp:
             res = super(AccountInvoice, self)._check_fiscal_values()
             return res
 
@@ -249,11 +247,7 @@ class AccountInvoice(models.Model):
     def action_number(self):
         invoices = self.env['account.invoice']
         for inv in self:
-            invtype = self.type
-            purchase_data = inv.purchase_data_id
-            ranch_type = purchase_data.ranch_type
-            performance = purchase_data.billing_type == 'performance'
-            if invtype != 'in_invoice' or not (performance and ranch_type == 'cattle'):
+            if not self.is_lsp:
                 res = super(AccountInvoice, inv).action_number()
                 continue
             inv._check_fiscal_values()

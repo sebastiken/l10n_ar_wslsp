@@ -34,25 +34,17 @@ class WSLSPCategoryCodes(models.Model):
     _description = "WSLSP Category Codes"
     _order = 'code'
 
+    ranch_type = fields.Selection([('cattle','Cattle'),('pork','Pork')], 'Ranch Type')
     code = fields.Char('Code', required=True, size=8)
     name = fields.Char('Desc', required=True, size=64)
-    species_id = fields.Many2one("ranch.species",string="Species")
     wslsp_config_id = fields.Many2one('wslsp.config')
-
-    @api.onchange('species_id')
-    def _control_species(self):
-
-        for code in self:
-            if self._origin.species_id:
-                self._origin.species_id.afip_code = False
-            if code.species_id:
-                code.species_id.afip_code = self.id
 
 class WSLSPCutCodes(models.Model):
     _name = "wslsp.cut.codes"
     _description = "WSLSP Cut Codes"
     _order = 'code'
 
+    ranch_type = fields.Selection([('cattle','Cattle'),('pork','Pork')], 'Ranch Type')
     code = fields.Char('Code', required=True, size=8)
     name = fields.Char('Desc', required=True, size=64)
     wslsp_config_id = fields.Many2one('wslsp.config')
@@ -62,6 +54,8 @@ class WSLSPParticipantCharacterCodes(models.Model):
     _description = "WSLSP Participant Character Codes"
     _order = 'code'
 
+
+    ranch_type = fields.Selection([('cattle','Cattle'),('pork','Pork')], 'Ranch Type')
     code = fields.Char('Code', required=True, size=8)
     name = fields.Char('Desc', required=True, size=64)
     wslsp_config_id = fields.Many2one('wslsp.config')
@@ -73,25 +67,14 @@ class WSLSPExpensesCodes(models.Model):
 
     code = fields.Char('Code', required=True, size=8)
     name = fields.Char('Desc', required=True, size=64)
-    expenses_id = fields.Many2one("ranch.expenses.type",string="Expenses")
     wslsp_config_id = fields.Many2one('wslsp.config')
-
-    @api.onchange('expenses_id')
-    def _control_expenses(self):
-
-        for code in self:
-            if self._origin.expenses_id:
-                self._origin.expenses_id.afip_code = False
-            if code.expenses_id:
-                code.expenses_id.afip_code = self.id
 
 class WSLSPMotiveCodes(models.Model):
     _name = "wslsp.motive.codes"
     _description = "WSLSP Motives Codes"
     _order = 'code'
 
-    billing_type = fields.Selection([('alive_kilo','Alive Kilo'),
-        ('performance','Performance')], 'Billing Type')
+    autoliquidation = fields.Boolean('Autoliquidation')
     code = fields.Char('Code', required=True, size=8)
     name = fields.Char('Desc', required=True, size=64)
     wslsp_config_id = fields.Many2one('wslsp.config')
@@ -101,8 +84,8 @@ class WSLSPOperationCodes(models.Model):
     _description = "WSLSP Operation Codes"
     _order = 'code'
 
-    billing_type = fields.Selection([('alive_kilo','Alive Kilo'),
-        ('performance','Performance')], 'Billing Type')
+    ranch_type = fields.Selection([('cattle','Cattle'),('pork','Pork')], 'Ranch Type')
+    autoliquidation = fields.Boolean('Autoliquidation')
     code = fields.Char('Code', required=True, size=8)
     name = fields.Char('Desc', required=True, size=64)
     wslsp_config_id = fields.Many2one('wslsp.config')
@@ -121,6 +104,7 @@ class WSLSPBreedCodes(models.Model):
     _description = "WSLSP Breed Codes"
     _order = 'code'
 
+    ranch_type = fields.Selection([('cattle','Cattle'),('pork','Pork')], 'Ranch Type')
     code = fields.Char('Code', required=True, size=8)
     name = fields.Char('Desc', required=True, size=64)
     wslsp_config_id = fields.Many2one('wslsp.config')
@@ -156,6 +140,7 @@ class WSLSPTaxCodes(models.Model):
     _description = "WSLSP Tax Codes"
     _order = 'code'
 
+    ranch_type = fields.Selection([('cattle','Cattle'),('pork','Pork')], 'Ranch Type')
     code = fields.Char('Code', required=True, size=8)
     name = fields.Char('Desc', required=True, size=64)
     wslsp_config_id = fields.Many2one('wslsp.config')

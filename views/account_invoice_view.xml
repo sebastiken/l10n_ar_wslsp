@@ -80,7 +80,9 @@
                                         <field name="sequence" widget="handle" />
                                         <field name="product_id"
                                             on_change="product_id_change(product_id, uos_id, quantity, name, parent.type, parent.partner_id, parent.fiscal_position, price_unit, parent.currency_id, parent.company_id, context)"/>
-                                        <field name="breed_id" options="{'no_create': True}" attrs="{'required': True}"/>
+                                        <field name="ranch_type" invisible="1"/>
+                                        <field name="breed_id" options="{'no_create': True}"
+                                            attrs="{'required': True}" domain="[('ranch_type', '=', ranch_type)]"/>
                                         <field name="name"/>
                                         <field name="company_id" invisible="1"/>
                                         <field name="account_id" groups="rafalim_cattle_ranch.group_ranch_responsible, rafalim_cattle_ranch.group_pork_ranch_user"
@@ -292,12 +294,59 @@
             <field name="act_window_id" ref="action_wslsp_autoliquidation"/>
         </record>
 
+        <record model="ir.actions.act_window" id="action_pork_wslsp_autoliquidation">
+            <field name="name">WSLSP Autoliquidation</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">account.invoice</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="account.view_account_invoice_filter"/>
+            <field name="domain">[
+                ('type','=','in_invoice'),
+                ('is_lsp', '=', True),
+                ('purchase_data_id.ranch_type', '=', 'pork')
+                ]</field>
+            <field name="context">{'default_type': 'in_invoice', 'type': 'in_invoice', 'journal_type': 'purchase'}</field>
+        </record>
+
+        <record model="ir.actions.act_window" id="rafalim_cattle_account.action_pork_ranch_invoices">
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">account.invoice</field>
+            <field name="domain">[
+                ('type','=','in_invoice'),
+                ('is_lsp', '=', False),
+                ('purchase_data_id', '!=', False),
+                ('purchase_data_id.ranch_type', '=', 'pork')]</field>
+        </record>
+
+        <record model="ir.actions.act_window.view" id="action_pork_wslsp_invoice_tree">
+            <field name="sequence" eval="10"/>
+            <field name="view_mode">tree</field>
+            <field name="view_id" ref="account.invoice_tree"/>
+            <field name="act_window_id" ref="action_pork_wslsp_autoliquidation"/>
+        </record>
+
+        <record model="ir.actions.act_window.view" id="action_pork_wslsp_invoice_form">
+            <field name="sequence" eval="20"/>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="view_invoice_wslsp_purchase_data_form"/>
+            <field name="act_window_id" ref="action_pork_wslsp_autoliquidation"/>
+        </record>
+
         <menuitem id="menu_action_autoliquidation"
             parent="rafalim_cattle_ranch.ranch_cattle_menu_root_base"
             name="Autoliquidation"
             sequence="101"
             groups="rafalim_cattle_ranch.group_ranch_responsible"
             action="action_wslsp_autoliquidation"/>
+
+        <menuitem id="menu_action_pork_autoliquidation"
+            parent="rafalim_cattle_ranch.ranch_pork_menu_root_base"
+            name="Autoliquidation"
+            sequence="101"
+            groups="rafalim_cattle_ranch.group_ranch_responsible"
+            action="action_pork_wslsp_autoliquidation"/>
+
 
 
     </data>

@@ -31,6 +31,7 @@
                                     class="oe_button oe_form_button oe_link" string="⇒Get Participant Characters"/><!-- groups="account.group_account_user"/-->
 								<field name="participant_character_ids" nolabel="1">
                                 	<tree string="WSLSP Participant Character" editable="top">
+                                        <field name="ranch_type" readonly="1"/>
                                     	<field name="name" readonly="1"/>
                                     	<field name="code" readonly="1"/>
                                 	</tree>
@@ -41,9 +42,9 @@
                                     class="oe_button oe_form_button oe_link" string="⇒Get Categories"/><!-- groups="account.group_account_user"/-->
 								<field name="categories_ids" nolabel="1">
                                     <tree editable="top" string="WSLSP Categories">
+                                        <field name="ranch_type" readonly="1"/>
                                         <field name="name" readonly="1"/>
                                         <field name="code" readonly="1"/>
-                                        <field name="species_id" domain="[('afip_code', '=', False)]"/>
                                     </tree>
                                 </field>
 							</page>
@@ -52,6 +53,7 @@
                                         type="object" string="⇒Get Cuts"/><!-- groups="account.group_account_user"/-->
 								<field name="cut_ids" nolabel="1">
                                 	<tree string="WSLSP Cuts" editable="top">
+                                        <field name="ranch_type" readonly="1"/>
                                     	<field name="name" readonly="1"/>
                                     	<field name="code" readonly="1"/>
                                 	</tree>
@@ -64,7 +66,6 @@
                                     <tree editable="top" string="WSLSP Expenses">
                                         <field name="name" readonly="1"/>
                                         <field name="code" readonly="1"/>
-                                        <field name="expenses_id" domain="[('afip_code', '=', False)]"/>
                                     </tree>
                                 </field>
 							</page>
@@ -73,7 +74,7 @@
                                     string="⇒Get Motives" class="oe_button oe_form_button oe_link"/><!-- groups="account.group_account_user"/-->
 								<field name="motive_ids" nolabel="1">
                                 	<tree string="WSLSP Motives" editable="top">
-                                        <field name="billing_type"/>
+                                        <field name="autoliquidation"/>
                                     	<field name="name" readonly="1"/>
                                     	<field name="code" readonly="1"/>
                                 	</tree>
@@ -84,7 +85,8 @@
                                     string="⇒Get Operations" class="oe_button oe_form_button oe_link"/><!-- groups="account.group_account_user"/-->
 								<field name="operation_ids" nolabel="1">
                                 	<tree string="WSLSP Operations" editable="top">
-                                        <field name="billing_type"/>
+                                        <field name="ranch_type" readonly="1"/>
+                                        <field name="autoliquidation"/>
                                     	<field name="name" readonly="1"/>
                                     	<field name="code" readonly="1"/>
                                 	</tree>
@@ -105,6 +107,7 @@
                                     string="⇒Get Breeds" class="oe_button oe_form_button oe_link"/><!-- groups="account.group_account_user"/-->
 								<field name="breed_ids" nolabel="1">
                                 	<tree string="WSLSP Breeds" editable="top">
+                                        <field name="ranch_type" readonly="1"/>
                                         <field name="name" readonly="1"/>
                                     	<field name="code" readonly="1"/>
                                 	</tree>
@@ -139,6 +142,7 @@
                                         string="⇒Get Taxes" class="oe_button oe_form_button oe_link"/><!-- groups="account.group_account_user"/-->
 								<field name="tax_ids" nolabel="1">
                                 	<tree string="WSLSP Taxes" editable="top">
+                                        <field name="ranch_type" readonly="1"/>
                                     	<field name="name" readonly="1"/>
                                     	<field name="code" readonly="1"/>
                                 	</tree>

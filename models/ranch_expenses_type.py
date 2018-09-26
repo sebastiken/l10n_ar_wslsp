@@ -26,10 +26,10 @@ from openerp import _, api, exceptions, fields, models
 class RanchExpensesType(models.Model):
     _inherit = "ranch.expenses.type"
 
-    afip_code = fields.Many2one("wslsp.expenses.codes",string="AFIP code")
-    code = fields.Char('Code', related="afip_code.code")
+    afip_code_id = fields.Many2one("wslsp.expenses.codes",string="AFIP code")
+    code = fields.Char('Code', related="afip_code_id.code")
 
-    _sql_constraints = [('uniq_AFIP_code', 'UNIQUE(afip_code)',
+    _sql_constraints = [('uniq_AFIP_code', 'UNIQUE(afip_code_id)',
         _("There is another specie with same AFIP code"))]
 
     @api.multi
@@ -40,3 +40,12 @@ class RanchExpensesType(models.Model):
             name = ('' if not record.code else str(record.code) + ' ') + record.name
             res.append((record.id, name))
         return res
+
+    @api.multi
+    def get_afip_expense_code(self):
+        self.ensure_one()
+        if not afip_code_id:
+            raise except_orm(_("Error!"),
+                    _("Expense %s does not have configured afip expense")%(self.name))
+        code = self.afip_code_id.code
+        return code

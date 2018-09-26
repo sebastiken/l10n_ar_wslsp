@@ -277,13 +277,15 @@ class WSLSP(WebService):
                 raise except_orm(_('WSLSP Error!'), msg)
         return msg
 
-    def _parse_code_name(self, data_objects):
+    def _parse_code_name(self, data_objects, ranch_type=False):
         data_lst = []
         for field in data_objects:
             vals = {
                 'name' : field.descripcion.encode('ascii', errors='ignore'),
-                'code' : field.codigo,
+                'code' : field.codigo.strip(),
             }
+            if ranch_type:
+                vals.update({'ranch_type': ranch_type})
             data_lst.append(vals)
         return data_lst
 
@@ -335,8 +337,13 @@ class WSLSP(WebService):
         operation = 'consultarOperaciones'
         response = self.wslsp_query(qry_data, operation)
         self._check_error(response)
-        data_objects = getattr(response, 'operacion')
-        operation_lst = self._parse_code_name(data_objects)
+        #Operacion Vacuna
+        cattle_data_objs = getattr(response, 'operacion')
+        operation_lst = self._parse_code_name(cattle_data_objs, ranch_type='cattle')
+        #Operacion Porcina
+        pork_data_objs = getattr(response, 'operacionPorcina')
+        pork_op_lst = self._parse_code_name(pork_data_objs, ranch_type='pork')
+        operation_lst.extend(pork_op_lst)
         return operation_lst
 
     def get_voucher_type(self):
@@ -362,8 +369,13 @@ class WSLSP(WebService):
         operation = 'consultarCaracteresParticipante'
         response = self.wslsp_query(qry_data, operation)
         self._check_error(response)
-        data_objects = getattr(response, 'caracter')
-        participant_lst = self._parse_code_name(data_objects)
+        #Caracter Vacuno
+        cattle_data_objs = getattr(response, 'caracter')
+        participant_lst = self._parse_code_name(cattle_data_objs, ranch_type='cattle')
+        #Caracter Porcino
+        pork_data_objs = getattr(response, 'caracterPorcino')
+        pork_part_lst = self._parse_code_name(pork_data_objs, ranch_type='pork')
+        participant_lst.extend(pork_part_lst)
         return participant_lst
 
     def get_categories(self):
@@ -371,8 +383,13 @@ class WSLSP(WebService):
         operation = 'consultarCategorias'
         response = self.wslsp_query(qry_data, operation)
         self._check_error(response)
-        data_objects = getattr(response, 'categoria')
-        category_lst = self._parse_code_name(data_objects)
+        #Categoría Vacuna
+        cattle_data_objs = getattr(response, 'categoria')
+        category_lst = self._parse_code_name(cattle_data_objs, ranch_type='cattle')
+        #Categoría Porcina
+        pork_data_objs = getattr(response, 'categoriaPorcina')
+        pork_categ_lst = self._parse_code_name(pork_data_objs, ranch_type='pork')
+        category_lst.extend(pork_categ_lst)
         return category_lst
 
     def get_motives(self):
@@ -389,8 +406,13 @@ class WSLSP(WebService):
         operation = 'consultarRazas'
         response = self.wslsp_query(qry_data, operation)
         self._check_error(response)
-        data_objects = getattr(response, 'raza')
-        breed_lst = self._parse_code_name(data_objects)
+        #Razas Vacunas
+        cattle_data_objs = getattr(response, 'raza')
+        breed_lst = self._parse_code_name(cattle_data_objs, ranch_type='cattle')
+        #Razas Porcinas
+        pork_data_objs = getattr(response, 'razaPorcina')
+        pork_breed_lst = self._parse_code_name(pork_data_objs, ranch_type='pork')
+        breed_lst.extend(pork_breed_lst)
         return breed_lst
 
     def get_cuts(self):
@@ -398,8 +420,13 @@ class WSLSP(WebService):
         operation = 'consultarCortes'
         response = self.wslsp_query(qry_data, operation)
         self._check_error(response)
-        data_objects = getattr(response, 'corte')
-        cut_lst = self._parse_code_name(data_objects)
+        #Cortes Vacunos
+        cattle_data_objs = getattr(response, 'corte')
+        cut_lst = self._parse_code_name(cattle_data_objs, ranch_type='cattle')
+        #Cortes Porcinos
+        pork_data_objs = getattr(response, 'cortePorcino')
+        pork_cut_lst = self._parse_code_name(pork_data_objs, ranch_type='pork')
+        cut_lst.extend(pork_cut_lst)
         return cut_lst
 
     def get_expenses(self):
@@ -416,8 +443,13 @@ class WSLSP(WebService):
         operation = 'consultarTributos'
         response = self.wslsp_query(qry_data, operation)
         self._check_error(response)
-        data_objects = getattr(response, 'tributo')
-        tribute_lst = self._parse_code_name(data_objects)
+        #Tributos Vacunos
+        cattle_data_objs = getattr(response, 'tributo')
+        tribute_lst = self._parse_code_name(cattle_data_objs, ranch_type='cattle')
+        #Tributos Porcinos
+        pork_data_objs = getattr(response, 'tributoPorcino')
+        pork_tribute_lst = self._parse_code_name(pork_data_objs, ranch_type='pork')
+        tribute_lst.extend(pork_tribute_lst)
         return tribute_lst
 
     # def get_liquidation_for_voucher(self, point_of_sale, voucher_type, number):
@@ -489,8 +521,8 @@ class WSLSP(WebService):
     def _get_operation_code(self):
         invoice = self.data.invoice
         purchase_data = invoice._check_ranch_purchase()
-        billing_type = purchase_data.billing_type
-        operation_code = self.config.get_operation_code(billing_type)
+        ranch_type = purchase_data.ranch_type
+        operation_code = self.config.get_operation_code(ranch_type)
         return operation_code
 
     def _get_emitter_data(self):
@@ -506,12 +538,16 @@ class WSLSP(WebService):
         if self.config.homologation:
             nro_ruca = '1011'
 
+        codCharacter = '4'
+        if invoice.purchase_data_id.ranch_type == 'pork':
+            codCharacter = '102'
+
         vals = {
             'puntoVenta' : pos_ar,
             'tipoComprobante' : voucher_type,
             'nroComprobante' : number,
             'invoice' : invoice, #Pass reference
-            'codCaracter' : '4', #TODO
+            'codCaracter' : codCharacter, #TODO
             'fechaInicioActividades' : date,
             'iibb' : iibb, #Opcional
             'nroRUCA' : nro_ruca,#'1011', #Opcional #VER EL CODIGO VERDADERO
@@ -535,9 +571,13 @@ class WSLSP(WebService):
         if self.config.homologation:
             nro_ruca = '1011'
 
+        codCharacter = '4'
+        if invoice.purchase_data_id.ranch_type == 'pork':
+            codCharacter = '102'
+
         iibb = partner.nro_insc_iibb
         vals = {
-            'codCaracter' : '4', #TODO
+            'codCaracter' : codCharacter, #TODO
             'operador' : {
                 'cuit' : partner_cuit,
                 'iibb' : iibb,#Opcional
@@ -553,8 +593,7 @@ class WSLSP(WebService):
         invoice_date = invoice.date_invoice
         invoice_line = invoice.invoice_line[0]
         purchase_data = invoice._check_ranch_purchase()
-        billing_type = purchase_data.billing_type
-        motive_code = self.config.get_motive_code(billing_type)
+        motive_code = self.config.get_motive_code()
         purchase_date = purchase_data.purchase_date
         summary_line = invoice_line.get_romaneo_summary_line()
         romaneo = summary_line.romaneo_id
@@ -574,6 +613,14 @@ class WSLSP(WebService):
         }
         return vals
 
+    def _get_head_qty(self, summary_line):
+        #En Performance no se factura las summary parcialmente
+        #No deberían existir 2 lineas asociadas al mismo summary
+        qty_quarters = summary_line.quarters
+        qty_halves = summary_line.halves
+        head_qty = (qty_quarters / 4.0) + (qty_halves / 2.0)
+        return int(head_qty)
+
     def _get_items_to_liquidation(self):
         invoice = self.data.invoice
         invoice_lines = invoice.invoice_line
@@ -584,10 +631,10 @@ class WSLSP(WebService):
             romaneo = summary_line.romaneo_id
             species = summary_line.species_id
             troop_number = romaneo.troop_number
+            ranch_type = romaneo.ranch_type
             kg_qty = int(summary_line.weight)
-            head_qty = summary_line.heads+1
-            category_code = self.config.get_category_code(species)
-            billing_type = romaneo.billing_type
+            category_code = species.get_afip_specie_code()
+            billing_type = invoice.purchase_data_type
             liquidation_code = self.config.get_liquidation_type_code(billing_type)
             tax = line.invoice_line_tax_id
             voucher_type = invoice._get_wslsp_voucher_type()
@@ -609,6 +656,10 @@ class WSLSP(WebService):
                 #'precioRecupero' : line.price_unit, #Optional
                 }
 
+            if ranch_type != 'cattle' or billing_type != 'alive_kilo':
+                head_qty = self._get_head_qty(summary_line)
+                vals.update({'cantidadCabezas': head_qty})
+
             if int(breed_code) in (21, 99):
                 vals['raza'].update({'detalle' : species.name})
 
@@ -617,8 +668,8 @@ class WSLSP(WebService):
                     vals['alicuotaIVA'] = float("{0:.2f}".format(tax.amount * 100))
 
             #Informamos la cantidad de cabezas si el tipo de liquidacion es por cabeza
-            if int(liquidation_code) != 1:
-                vals['cantidadCabezas'] = int(head_qty)
+            # if int(liquidation_code) != 1:
+            #     vals['cantidadCabezas'] = int(head_qty)
 
             #TODO: no esta desarrollado
             #Si es liquidacion de compra
@@ -640,6 +691,8 @@ class WSLSP(WebService):
         invoice = self.data.invoice
         purchase_data = invoice.purchase_data_id
         for expenses_line in purchase_data.expenses_lines:
+            expense_type = expenses_line.expense_type_id
+            codExpense = expense_type.get_afip_expense_code()
             vals = {
                 'codGasto' : expenses_line.expense_type_id.code,
                 #'descripcion' : None, #Optional
