@@ -40,7 +40,7 @@ class RanchSpecies(models.Model):
     @api.multi
     def get_afip_specie_code(self):
         self.ensure_one()
-        if not afip_code_id:
+        if not self.afip_code_id:
             raise except_orm(_("Error!"),
                     _("Specie %s does not have configured afip category")%(self.name))
         code = self.afip_code_id.code

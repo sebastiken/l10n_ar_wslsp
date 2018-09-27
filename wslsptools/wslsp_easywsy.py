@@ -591,12 +591,16 @@ class WSLSP(WebService):
     def _get_liquidation_data(self):
         invoice = self.data.invoice
         invoice_date = invoice.date_invoice
-        invoice_line = invoice.invoice_line[0]
         purchase_data = invoice._check_ranch_purchase()
         motive_code = self.config.get_motive_code()
         purchase_date = purchase_data.purchase_date
-        summary_line = invoice_line.get_romaneo_summary_line()
-        romaneo = summary_line.romaneo_id
+        if invoice.purchase_data_type != 'alive_kilo':
+            invoice_line = invoice.invoice_line[0]
+            summary_line = invoice_line.get_romaneo_summary_line()
+            romaneo = summary_line.romaneo_id
+        else:
+            #TODO: Solucionar esto.
+            romaneo = invoice.purchase_data_id.romaneo_ids[0]
 
         vals = {
             'invoice' : invoice,
@@ -627,16 +631,32 @@ class WSLSP(WebService):
         item_lst = []
         for line in invoice_lines:
             partner = invoice.company_id.partner_id
-            summary_line = line.get_romaneo_summary_line()
-            romaneo = summary_line.romaneo_id
-            species = summary_line.species_id
-            troop_number = romaneo.troop_number
-            ranch_type = romaneo.ranch_type
-            kg_qty = int(summary_line.weight)
-            category_code = species.get_afip_specie_code()
             billing_type = invoice.purchase_data_type
+            ranch_type = invoice.purchase_data_id.ranch_type
+
+            if billing_type == 'alive_kilo':
+                romaneo = invoice.purchase_data_id.romaneo_ids[0]
+                final_line = line.get_romaneo_final_line()
+                #TODO:Sacar esta validacion cuando este configurado bien los gastos
+                if not final_line:
+                    continue
+                species = final_line.species
+                head_qty = final_line.quantity
+                alive_kilo = False
+                troop_number = romaneo.troop_number
+            else:
+                summary_line = line.get_romaneo_summary_line()
+                #TODO:Sacar esta validacion cuando este configurado bien los gastos
+                if not summary_line:
+                    continue
+                romaneo = summary_line.romaneo_id
+                species = summary_line.species_id
+                alive_kilo = int(summary_line.weight)
+                troop_number = romaneo.troop_number
+                head_qty = self._get_head_qty(summary_line)
+
+            category_code = species.get_afip_specie_code()
             liquidation_code = self.config.get_liquidation_type_code(billing_type)
-            tax = line.invoice_line_tax_id
             voucher_type = invoice._get_wslsp_voucher_type()
             breed_code = line.breed_id.code
 
@@ -646,30 +666,28 @@ class WSLSP(WebService):
                 'tipoLiquidacion' : liquidation_code,
                 'cantidad' : int(line.quantity),
                 'precioUnitario' : line.price_unit,
+                'cantidadCabezas': head_qty,
                 # 'tipoIVANulo' : '', #'NA', #Opcional
                 'raza' : {
                     'codRaza' : breed_code, #species.afip_code.code,
                 },
                 'nroTropa' : troop_number, #Optional
                 #'codCorte' : '1', #Optional
-                'cantidadKgVivo' : kg_qty, #Optional
+                # 'cantidadKgVivo' : alive_kilo, #Optional
                 #'precioRecupero' : line.price_unit, #Optional
                 }
 
-            if ranch_type != 'cattle' or billing_type != 'alive_kilo':
+            if billing_type != 'alive_kilo':
                 head_qty = self._get_head_qty(summary_line)
-                vals.update({'cantidadCabezas': head_qty})
+                vals.update({'cantidadKgVivo': alive_kilo})
 
             if int(breed_code) in (21, 99):
                 vals['raza'].update({'detalle' : species.name})
 
+            tax = line.invoice_line_tax_id
             if tax:
                 if int(voucher_type) != 189: #No se informa si la denominacion es C
                     vals['alicuotaIVA'] = float("{0:.2f}".format(tax.amount * 100))
-
-            #Informamos la cantidad de cabezas si el tipo de liquidacion es por cabeza
-            # if int(liquidation_code) != 1:
-            #     vals['cantidadCabezas'] = int(head_qty)
 
             #TODO: no esta desarrollado
             #Si es liquidacion de compra
@@ -694,7 +712,7 @@ class WSLSP(WebService):
             expense_type = expenses_line.expense_type_id
             codExpense = expense_type.get_afip_expense_code()
             vals = {
-                'codGasto' : expenses_line.expense_type_id.code,
+                'codGasto' : codExpense,
                 #'descripcion' : None, #Optional
                 #'baseImponible' : None, #Optional
                 #'alicuota' : None, #Optional
@@ -702,9 +720,9 @@ class WSLSP(WebService):
                 #'alicuotaIVA' : expenses_line.expense_type_id.tax.amount * 100.0, #Optional
                 #'tipoIVANulo' : 'NG', #Optional
                 }
-            if expenses_line.expense_type_id.code == "99":
-                vals['descripcion'] = "TODO" #TODO
-            if expenses_line.amount_type == "percentage":
+            if int(expense_type.code) == 99:
+                vals['descripcion'] = expense_type.name
+            if expenses_line.amount_type == 'percentage':
                 vals['alicuota'] = expenses_line.expense_amount_percentage
                 vals['baseImponible'] = purchase.untaxed_total
             else:

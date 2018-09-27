@@ -36,6 +36,46 @@ class AccountInvoiceLine(models.Model):
     breed_id = fields.Many2one('wslsp.breed.codes', 'Breed')
     ranch_type = fields.Selection(related='invoice_id.purchase_data_id.ranch_type', string='Ranch Type')
 
+    def get_romaneo_summary_line(self):
+        summary_line_obj = self.env['ranch.purchase.romaneo.summary.line']
+        query = """
+            SELECT romaneo_summary_line_id
+            FROM purchase_romaneo_summary_line_invoice_rel
+            WHERE invoice_id = %s
+            LIMIT 1
+        """
+        self.env.cr.execute(query, (self.id,))
+        try:
+            res = self.env.cr.fetchone()[0]
+            summary_line = summary_line_obj.browse(res)
+        except (TypeError, IndexError):
+            summary_line = summary_line_obj
+        return summary_line
+
+    def get_romaneo_final_line(self):
+        final_line_obj = self.env['ranch.purchase.data.final.line']
+        query = """
+            SELECT romaneo_final_line_id
+            FROM purchase_romaneo_final_line_invoice_rel
+            WHERE invoice_id = %s
+            LIMIT 1
+        """
+        self.env.cr.execute(query, (self.id,))
+        try:
+            res = self.env.cr.fetchone()[0]
+            final_line = final_line_obj.browse(res)
+        except (TypeError, IndexError):
+            final_line = final_line_obj
+        return final_line
+
+    def _check_romaneo_final_line(self):
+        self.ensure_one()
+        final_line = self.get_romaneo_final_line()
+        if not final_line:
+            raise except_orm(_('WSLSP Error!'),
+                    _("Line Invoice [%s] does not have a ranch purchase data associated") %(self.name))
+        return final_line
+
 class AccountInvoice(models.Model):
     _inherit = 'account.invoice'
 
@@ -81,18 +121,14 @@ class AccountInvoice(models.Model):
         config = self.get_wslsp_config()
         purchase_data = self._check_ranch_purchase()
         billing_type = purchase_data.billing_type
-        if billing_type == 'performance':
-            is_direct = True
-        else:
-            is_direct = False
         voucher_type = config.voucher_type_ids.filtered(
-                lambda x: (x.is_direct == is_direct and
+                lambda x: (x.is_direct and
                 x.document_type == self.type and
                 x.denomination_id.id == self.denomination_id.id))
         if not voucher_type:
             raise except_orm(_('WSLSP Error!'),
                     _('There is not configured voucher type with document[%s] Is Direct[%s] Denomination[%s]') %
-                    (self.type, is_direct, self.denomination_id.name))
+                    (self.type, True, self.denomination_id.name))
         if len(voucher_type) > 1:
             raise except_orm(_('WSLSP Error!'), _('There are duplicated voucher types'))
         return int(voucher_type.code)
@@ -332,30 +368,3 @@ class AccountInvoice(models.Model):
         #paso el regisruttro en el modelo attachment
         self.env['ir.attachment'].create(data_attach)
         return True
-
-class AccountInvoiceLine(models.Model):
-    _inherit = 'account.invoice.line'
-
-    def get_romaneo_summary_line(self):
-        summary_line_obj = self.env['ranch.purchase.romaneo.summary.line']
-        query = """
-            SELECT romaneo_summary_line_id
-            FROM purchase_romaneo_summary_line_invoice_rel
-            WHERE invoice_id = %s
-            LIMIT 1
-        """
-        self.env.cr.execute(query, (self.id,))
-        try:
-            res = self.env.cr.fetchone()[0]
-            summary_line = summary_line_obj.browse(res)
-        except (TypeError, IndexError):
-            summary_line = summary_line_obj
-        return summary_line
-
-    def _check_romaneo_summary_line(self):
-        self.ensure_one()
-        summary_line = self.get_romaneo_summary_line()
-        if not summary_line:
-            raise except_orm(_('WSLSP Error!'),
-                    _("Line Invoice [%s] does not have a ranch purchase data associated") %(self.name))
-        return summary_line

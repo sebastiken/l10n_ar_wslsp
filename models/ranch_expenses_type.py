@@ -44,7 +44,7 @@ class RanchExpensesType(models.Model):
     @api.multi
     def get_afip_expense_code(self):
         self.ensure_one()
-        if not afip_code_id:
+        if not self.afip_code_id:
             raise except_orm(_("Error!"),
                     _("Expense %s does not have configured afip expense")%(self.name))
         code = self.afip_code_id.code
