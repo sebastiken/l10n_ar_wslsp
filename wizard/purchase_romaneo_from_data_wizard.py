@@ -19,7 +19,8 @@ class RanchPurchaseRomaneoFromDataWizard(models.TransientModel):
         purchase_data_id = self.env.context.get('active_ids')
         purchase_data_obj = self.env['ranch.purchase.data']
         purchase_data = purchase_data_obj.browse(purchase_data_id)
-        if purchase_data.billing_type == 'performance':
+        auction = purchase_data.auction_id
+        if purchase_data.billing_type == 'performance' or auction:
             return romaneos
         troop_number_lst = purchase_data.romaneo_ids.mapped('troop_number')
         troop_lst = list(set(troop_number_lst))
@@ -37,7 +38,8 @@ class RanchPurchaseRomaneoFromDataWizard(models.TransientModel):
         purchase_data_id = self.env.context.get('active_ids')
         purchase_data_obj = self.env['ranch.purchase.data']
         purchase_data = purchase_data_obj.browse(purchase_data_id)
-        if purchase_data.billing_type == 'performance':
+        auction = purchase_data.auction_id
+        if purchase_data.billing_type == 'performance' or auction:
             return res
         troop_number_lst = self.pre_matched_lines.mapped('troop_number')
         troop_lst = list(set(troop_number_lst))
