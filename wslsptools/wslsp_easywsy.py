@@ -161,7 +161,7 @@ class WSLSP(WebService):
             raise except_orm(_("WSFE Error!"), _("Invalid Reception Date"))
         operation_date = datetime.strptime(fechaOperacion, AFIP_DATE_FORMAT).date()
         voucher_date = datetime.strptime(fechaComprobante, AFIP_DATE_FORMAT).date()
-        receipt_date = datetime.strptime(fechaComprobante, AFIP_DATE_FORMAT).date()
+        receipt_date = datetime.strptime(value, AFIP_DATE_FORMAT).date()
         if not (operation_date <= receipt_date <= voucher_date):
             raise except_orm(_("WSFE Error!"), _("Invalid Receipt Date"))
         return True
@@ -608,7 +608,7 @@ class WSLSP(WebService):
             'fechaOperacion' : purchase_date,#'2018-07-23', #purchase_date
             #'lugarRealizacion' : False,#Opcional
             'codMotivo' : motive_code,
-            'fechaRecepcion' : romaneo.date,#'2018-07-24', #Opcional TODO
+            'fechaRecepcion' : romaneo.entry_date,#'2018-07-24', #Opcional TODO
             'fechaFaena' :romaneo.date,#'2018-07-25', #Opcional TODO
             #'frigorifico' : { #Opcional
             #    'cuit' : '30678155469',
@@ -628,23 +628,19 @@ class WSLSP(WebService):
     def _get_items_to_liquidation(self):
         invoice = self.data.invoice
         invoice_lines = invoice.invoice_line
+        ranch_type = invoice.purchase_data_id.ranch_type
+
+        #Si es porcino lo facturamos a kilo vivo
+        purchase_data = invoice._check_ranch_purchase()
+        billing_type = purchase_data.ranch_type
+        if purchase_data.ranch_type == 'pork':
+            billing_type = 'alive_kilo'
+
         item_lst = []
         for line in invoice_lines:
             partner = invoice.company_id.partner_id
-            billing_type = invoice.purchase_data_type
-            ranch_type = invoice.purchase_data_id.ranch_type
 
-            if billing_type == 'alive_kilo':
-                romaneo = invoice.purchase_data_id.romaneo_ids[0]
-                final_line = line.get_romaneo_final_line()
-                #TODO:Sacar esta validacion cuando este configurado bien los gastos
-                if not final_line:
-                    continue
-                species = final_line.species
-                head_qty = final_line.quantity
-                alive_kilo = False
-                troop_number = romaneo.troop_number
-            else:
+            if ranch_type == 'pork' or billing_type == 'performance':
                 summary_line = line.get_romaneo_summary_line()
                 #TODO:Sacar esta validacion cuando este configurado bien los gastos
                 if not summary_line:
@@ -654,6 +650,16 @@ class WSLSP(WebService):
                 alive_kilo = int(summary_line.weight)
                 troop_number = romaneo.troop_number
                 head_qty = self._get_head_qty(summary_line)
+            else:
+                romaneo = invoice.purchase_data_id.romaneo_ids[0]
+                final_line = line.get_romaneo_final_line()
+                #TODO:Sacar esta validacion cuando este configurado bien los gastos
+                if not final_line:
+                    continue
+                species = final_line.species
+                head_qty = final_line.quantity
+                alive_kilo = False
+                troop_number = romaneo.troop_number
 
             category_code = species.get_afip_specie_code()
             liquidation_code = self.config.get_liquidation_type_code(billing_type)
