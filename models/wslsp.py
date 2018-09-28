@@ -99,11 +99,11 @@ class WSLSPConfig(models.Model):
             raise except_orm(_('WSLSP Config Error!'), _('There is no WSLSP configuration set to this company'))
         return config
 
-    def get_motive_code(self, billing_type):
-        motives = self.motive_ids.filtered(lambda x: x.billing_type == billing_type)
+    def get_motive_code(self):
+        motives = self.motive_ids.filtered(lambda x: x.autoliquidation)
         if not motives:
             raise except_orm(_('WSLSP Config Error!'),
-                    _('The wslsp does not have a configuration for the motives [%s]') %(billing_type))
+                    _('The wslsp does not have a configuration for the motives to autoliquidation'))
         return motives[0].code
 
     def get_liquidation_type_code(self, billing_type):
@@ -113,18 +113,12 @@ class WSLSPConfig(models.Model):
                     _('The wslsp does not have a configuration for the liquidation types [%s]') %(billing_type))
         return liquidation_types[0].code
 
-    def get_category_code(self, species):
-        categories = self.categories_ids.filtered(lambda x: x.species_id.id == species.id)
-        if not categories:
-            raise except_orm(_('WSLSP Config Error!'),
-                    _('The wslsp does not have a configuration for the categories [%s]') %(species.name))
-        return categories[0].code
-
-    def get_operation_code(self, billing_type):
-        operations = self.operation_ids.filtered(lambda x: x.billing_type == billing_type)
+    def get_operation_code(self, ranch_type):
+        operations = self.operation_ids.filtered(
+                lambda x: x.autoliquidation and x.ranch_type == ranch_type)
         if not operations:
             raise except_orm(_('WSLSP Config Error!'),
-                    _('The wslsp does not have a configuration for the operations [%s]') %(billing_type))
+                    _('The wslsp does not have a configuration for the operations [%s]') %(ranch_type))
         return operations[0].code
 
     @api.multi
@@ -148,7 +142,9 @@ class WSLSPConfig(models.Model):
         ws = self._get_wslsp_obj()
         category_lst = ws.get_categories()
         for category in category_lst:
-            res = self.categories_ids.filtered(lambda x: x.code ==  category['code'])
+            code = category['code']
+            ranch_type = category['ranch_type']
+            res = self.categories_ids.filtered(lambda x: x.code == code and x.ranch_type == ranch_type)
             if not res:
                 self.write({'categories_ids' : [(0, False, category)]})
             else :
@@ -160,7 +156,9 @@ class WSLSPConfig(models.Model):
         ws = self._get_wslsp_obj()
         cut_lst = ws.get_cuts()
         for cut in cut_lst:
-            res = self.cut_ids.filtered(lambda x: x.code ==  cut['code'])
+            code = cut['code']
+            ranch_type = cut['ranch_type']
+            res = self.cut_ids.filtered(lambda x: x.code == code and x.ranch_type == ranch_type)
             if not res:
                 self.write({'cut_ids' : [(0, False, cut)]})
             else:
@@ -168,11 +166,14 @@ class WSLSPConfig(models.Model):
         return True
 
     @api.multi
-    def get_wslsp_participant_characters(self):
+    def get_wslsp_participant_characters(self, ranch_type):
         ws = self._get_wslsp_obj()
         part_lst = ws.get_participant_characters()
         for part in part_lst:
-            res = self.participant_character_ids.filtered(lambda x: x.code ==  part['code'])
+            code = part['code']
+            ranch_type = part['ranch_type']
+            res = self.participant_character_ids.filtered(
+                    lambda x: x.code == code and x.ranch_type == ranch_type)
             if not res:
                 self.write({'participant_character_ids' : [(0, False, part)]})
             else:
@@ -208,7 +209,9 @@ class WSLSPConfig(models.Model):
         ws = self._get_wslsp_obj()
         operation_lst = ws.get_operations()
         for operation in operation_lst:
-            res = self.operation_ids.filtered(lambda x: x.code ==  operation['code'])
+            code = operation['code']
+            ranch_type = operation['ranch_type']
+            res = self.operation_ids.filtered(lambda x: x.code == code and x.ranch_type == ranch_type)
             if not res:
                 self.write({'operation_ids' : [(0, False, operation)]})
             else:
@@ -232,7 +235,9 @@ class WSLSPConfig(models.Model):
         ws = self._get_wslsp_obj()
         breed_lst = ws.get_breeds()
         for breed in breed_lst:
-            res = self.breed_ids.filtered(lambda x: x.code ==  breed['code'])
+            code = breed['code']
+            ranch_type = breed['ranch_type']
+            res = self.breed_ids.filtered(lambda x: x.code == code and x.ranch_type == ranch_type)
             if not res:
                 self.write({'breed_ids' : [(0, False, breed)]})
             else:
@@ -244,7 +249,7 @@ class WSLSPConfig(models.Model):
         ws = self._get_wslsp_obj()
         voucher_type_lst = ws.get_voucher_type()
         for voucher_type in voucher_type_lst:
-            res = self.voucher_type_ids.filtered(lambda x: x.code ==  voucher_type['code'])
+            res = self.voucher_type_ids.filtered(lambda x: x.code == voucher_type['code'])
             if not res:
                 self.write({'voucher_type_ids' : [(0, False, voucher_type)]})
             else:
@@ -256,7 +261,7 @@ class WSLSPConfig(models.Model):
         ws = self._get_wslsp_obj()
         liquidation_lst = ws.get_liquidation_type()
         for liquidation in liquidation_lst:
-            res = self.liquidation_type_ids.filtered(lambda x: x.code ==  liquidation['code'])
+            res = self.liquidation_type_ids.filtered(lambda x: x.code == liquidation['code'])
             if not res:
                 self.write({'liquidation_type_ids' : [(0, False, liquidation)]})
             else:
@@ -268,7 +273,9 @@ class WSLSPConfig(models.Model):
         ws = self._get_wslsp_obj()
         taxes_lst = ws.get_tributes()
         for taxes in taxes_lst:
-            res = self.tax_ids.filtered(lambda x: x.code ==  taxes['code'])
+            code = taxes['code']
+            ranch_type = taxes['ranch_type']
+            res = self.tax_ids.filtered(lambda x: x.code == code and x.ranch_type == ranch_type)
             if not res:
                 self.write({'tax_ids' : [(0, False, taxes)]})
             else:

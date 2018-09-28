@@ -32,7 +32,16 @@ _logger = logging.getLogger(__name__)
 class RanchSpecies(models.Model):
     _inherit = "ranch.species"
 
-    afip_code = fields.Many2one("wslsp.category.codes",string="AFIP code")
+    afip_code_id = fields.Many2one("wslsp.category.codes",string="AFIP code")
 
-    _sql_constraints = [('uniq_AFIP_code', 'UNIQUE(afip_code)',
+    _sql_constraints = [('uniq_AFIP_code', 'UNIQUE(afip_code_id)',
         _("There is another specie with same AFIP code"))]
+
+    @api.multi
+    def get_afip_specie_code(self):
+        self.ensure_one()
+        if not self.afip_code_id:
+            raise except_orm(_("Error!"),
+                    _("Specie %s does not have configured afip category")%(self.name))
+        code = self.afip_code_id.code
+        return code
