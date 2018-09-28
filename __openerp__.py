@@ -31,6 +31,7 @@
                 "rafalim_payment_system"],
     "data": [
         "data/wslsp_data.xml",
+        "data/groups_data.xml",
         "views/company_view.xml",
         "views/wslsp_view.xml",
         "views/ranch_expenses_type_view.xml",
