@@ -70,7 +70,6 @@
                                     on_change="onchange_journal_id(journal_id)" options="{'no_create': True}"
                                     attrs="{'readonly':[('internal_number','!=',False)]}"/>
                                 <field name="currency_id" groups="base.group_multi_currency"/>
-                                <field name="check_total" groups="account.group_supplier_inv_check_total"/>
                             </group>
                         </group>
                         <notebook>
