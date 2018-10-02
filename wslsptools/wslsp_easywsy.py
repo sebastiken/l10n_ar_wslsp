@@ -182,13 +182,11 @@ class WSLSP(WebService):
     def _check_invoice_number(value, invoice):
         conf = invoice.get_wslsp_config()
         wslsp_next_number = invoice.get_next_wslsp_number(conf=conf)
-        # Si es homologacion, no hacemos el chequeo del numero
-        if not conf.homologation:
-            if int(wslsp_next_number) != int(value):
-                raise except_orm(_("WSFE Error!"),
-                        _("The next number in the system [%d] does not " +
-                          "match the one obtained from AFIP WSLSP [%d]") %
-                        (int(value), int(wslsp_next_number)))
+        if int(wslsp_next_number) != int(value):
+            raise except_orm(_("WSFE Error!"),
+                    _("The next number in the system [%d] does not " +
+                      "match the one obtained from AFIP WSLSP [%d]") %
+                    (int(value), int(wslsp_next_number)))
         return True
 
     @wsapi.check(['nroDTE'], reraise=True, sequence=20)
@@ -243,7 +241,6 @@ class WSLSP(WebService):
         return True
 
     #-------------------End-Authentication-------------------#
-
 
     #------------------------Queries-------------------------#
     def wslsp_query(self, qry_data, operation):
@@ -632,7 +629,7 @@ class WSLSP(WebService):
 
         #Si es porcino lo facturamos a kilo vivo
         purchase_data = invoice._check_ranch_purchase()
-        billing_type = purchase_data.ranch_type
+        billing_type = purchase_data.billing_type
         if purchase_data.ranch_type == 'pork':
             billing_type = 'alive_kilo'
 
