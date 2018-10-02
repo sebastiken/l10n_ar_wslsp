@@ -280,6 +280,14 @@ class AccountInvoice(models.Model):
         return super(AccountInvoice, self).action_cancel()
 
     @api.multi
+    def action_move_create(self):
+        #Estamos en autoliquidacion?
+        lsp_invoices = self.filtered(lambda x: x.is_lsp)
+        lsp_invoices.button_compute(set_total=True)
+        res = super(AccountInvoice, self).action_move_create()
+        return res
+
+    @api.multi
     def action_number(self):
         invoices = self.env['account.invoice']
         for inv in self:
