@@ -22,15 +22,13 @@
 ##############################################################################
 
 from openerp import _, api, exceptions, fields, models
+from openerp.exceptions import except_orm
 
 class RanchExpensesType(models.Model):
     _inherit = "ranch.expenses.type"
 
     afip_code_id = fields.Many2one("wslsp.expenses.codes",string="AFIP code")
     code = fields.Char('Code', related="afip_code_id.code")
-
-    _sql_constraints = [('uniq_AFIP_code', 'UNIQUE(afip_code_id)',
-        _("There is another specie with same AFIP code"))]
 
     @api.multi
     @api.depends('code', 'name')
