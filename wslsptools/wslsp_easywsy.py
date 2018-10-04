@@ -497,7 +497,7 @@ class WSLSP(WebService):
                     'receptor' : receiver_data,
                     'datosLiquidacion' : liquidation_data,
                     'itemDetalleLiquidacion' : items_data,
-                    #'gasto' : expense_data or {},
+                    'gasto' : expense_data or {},
                     #'tributo' : tribute_data or {},
                     'datosAdicionales' : ' ',#Optional
                 },
@@ -509,8 +509,8 @@ class WSLSP(WebService):
             data['GenerarLiquidacionReq']['solicitud'].update(dte_data)
         if guide_data:
             data['GenerarLiquidacionReq']['solicitud'].update(guide_data)
-        # if expense_data:
-        #     data['GenerarLiquidacionReq']['solicitud'].update(expense_data)
+        if expense_data:
+             data['GenerarLiquidacionReq']['solicitud'].update(expense_data)
         if tribute_data:
             data['GenerarLiquidacionReq']['solicitud'].update(tribute_data)
         return data
@@ -730,7 +730,7 @@ class WSLSP(WebService):
                 vals['baseImponible'] = purchase.untaxed_total
             else:
                 #TODO MUST BE 10.5 OR 21
-                vals['importe'] = expenses_line.expense_amount_bill
+                vals['importe'] = expenses_line.expense_amount
             expense_lst.append(vals)
         return {'gasto' :  expense_lst}
 
