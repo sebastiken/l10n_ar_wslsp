@@ -21,14 +21,14 @@
 #
 ##############################################################################
 
+import logging
+import re
+
 from openerp import _, api, exceptions, fields, models
 from openerp.exceptions import except_orm
-from openerp.addons.decimal_precision import decimal_precision as dp
-import re
-import logging
-from base64 import b64decode
 
 _logger = logging.getLogger(__name__)
+
 
 class AccountInvoiceLine(models.Model):
     _inherit = 'account.invoice.line'
@@ -75,6 +75,13 @@ class AccountInvoiceLine(models.Model):
             raise except_orm(_('WSLSP Error!'),
                     _("Line Invoice [%s] does not have a ranch purchase data associated") %(self.name))
         return final_line
+
+    def _round_qty_and_adjust_price(self, price_unit, quantity):
+        subtotal = price_unit * quantity
+        rounded_qty = round(quantity, 0)
+        adjusted_price_unit = subtotal / rounded_qty
+        return adjusted_price_unit, int(quantity)
+
 
 class AccountInvoice(models.Model):
     _inherit = 'account.invoice'

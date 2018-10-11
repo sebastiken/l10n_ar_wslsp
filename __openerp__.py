@@ -41,4 +41,7 @@
     ],
     "installable": True,
     "application": True,
+    "python": [
+        "git+https://gitlab.e-mips.com.ar/infra/easywsy.git@py2",
+    ],
 }
