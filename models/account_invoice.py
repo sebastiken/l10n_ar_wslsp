@@ -80,7 +80,7 @@ class AccountInvoiceLine(models.Model):
         subtotal = price_unit * quantity
         rounded_qty = round(quantity, 0)
         adjusted_price_unit = subtotal / rounded_qty
-        return adjusted_price_unit, int(quantity)
+        return adjusted_price_unit, rounded_qty
 
 
 class AccountInvoice(models.Model):
