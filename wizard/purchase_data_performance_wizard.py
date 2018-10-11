@@ -48,7 +48,8 @@ class PurchaseDataPerformanceWizardd(models.TransientModel):
 
     @api.multi
     def _adjust_invoice_lines(self, purchase_data, invoice_vals, inv_summary_line_ids):
-        res = super(PurchaseDataPerformanceWizardd, self)._adjust_invoice_lines()
+        res = super(PurchaseDataPerformanceWizardd, self)._adjust_invoice_lines(
+            purchase_data, invoice_vals, inv_summary_line_ids)
         purchase_data, invoice_vals, inv_summary_line_ids = res
         if invoice_vals.get("is_lsp", False):
             inv_lines = self.env["account.invoice.line"].browse(inv_summary_line_ids)
@@ -94,7 +95,8 @@ class PurchaseDataPerformanceWizard(models.TransientModel):
 
     @api.multi
     def _adjust_invoice_lines(self, purchase_data, invoice_vals, inv_summary_line_ids):
-        res = super(PurchaseDataPerformanceWizard, self)._adjust_invoice_lines()
+        res = super(PurchaseDataPerformanceWizard, self)._adjust_invoice_lines(
+            purchase_data, invoice_vals, inv_summary_line_ids)
         purchase_data, invoice_vals, inv_summary_line_ids = res
         if invoice_vals.get("is_lsp", False):
             inv_lines = self.env["account.invoice.line"].browse(inv_summary_line_ids)
