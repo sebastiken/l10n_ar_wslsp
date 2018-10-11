@@ -483,8 +483,8 @@ class WSLSP(WebService):
         emitter_data = self._get_emitter_data()
         receiver_data = self._get_receiver_data()
         liquidation_data = self._get_liquidation_data()
-        items_data = self._get_items_to_liquidation()
-        expense_data = self._get_expenses()
+        expense_lines, items_data = self._get_items_to_liquidation()
+        expense_data = self._get_expenses(expense_lines)
         tribute_data = self._get_tribute()
         guide_data = self._get_guide()
         dte_data = self._get_dte()
@@ -634,13 +634,15 @@ class WSLSP(WebService):
             billing_type = 'alive_kilo'
 
         item_lst = []
+        expense_lines = []
         for line in invoice_lines:
             partner = invoice.company_id.partner_id
 
             if ranch_type == 'pork' or billing_type == 'performance':
                 summary_line = line.get_romaneo_summary_line()
-                #TODO:Sacar esta validacion cuando este configurado bien los gastos
+                #TODO: Sacar esta validacion cuando este configurado bien los gastos
                 if not summary_line:
+                    expense_lines.append(line)
                     continue
                 romaneo = summary_line.romaneo_id
                 species = summary_line.species_id
@@ -652,6 +654,7 @@ class WSLSP(WebService):
                 final_line = line.get_romaneo_final_line()
                 #TODO:Sacar esta validacion cuando este configurado bien los gastos
                 if not final_line:
+                    expense_lines.append(line)
                     continue
                 species = final_line.species
                 head_qty = final_line.quantity
@@ -705,32 +708,38 @@ class WSLSP(WebService):
                 }]
 
             item_lst.append(vals)
-        return item_lst
+        return expense_lines, item_lst
 
-    def _get_expenses(self):
+    def _get_expenses(self, expense_invoice_lines):
         expense_lst = []
         invoice = self.data.invoice
-        purchase_data = invoice.purchase_data_id
-        for expenses_line in purchase_data.expenses_lines:
-            expense_type = expenses_line.expense_type_id
-            codExpense = expense_type.get_afip_expense_code()
+        #purchase_data = invoice.purchase_data_id
+
+        for inv_exp_line in expense_invoice_lines:
+            expense = inv_exp_line.expense_line_ids
+            if expense:
+                expense_type = expense.expense_type_id
+                codExpense = expense_type.get_afip_expense_code()
+            else:
+                # BAD HACK: Commission
+                codExpense = 16
+
             vals = {
                 'codGasto' : codExpense,
-                #'descripcion' : None, #Optional
                 #'baseImponible' : None, #Optional
                 #'alicuota' : None, #Optional
-                #'importe' : None, #Optional
-                #'alicuotaIVA' : expenses_line.expense_type_id.tax.amount * 100.0, #Optional
+                'importe' : inv_exp_line.price_subtotal, #Optional
+                'alicuotaIVA' : inv_exp_line.invoice_line_tax_id[0].amount * 100.0, #Optional
                 #'tipoIVANulo' : 'NG', #Optional
                 }
             if int(expense_type.code) == 99:
-                vals['descripcion'] = expense_type.name
-            if expenses_line.amount_type == 'percentage':
-                vals['alicuota'] = expenses_line.expense_amount_percentage
-                vals['baseImponible'] = purchase.untaxed_total
-            else:
-                #TODO MUST BE 10.5 OR 21
-                vals['importe'] = expenses_line.expense_amount
+                vals['descripcion'] = inv_exp_line.name
+#            if expenses_line.amount_type == 'percentage':
+#                vals['alicuota'] = expenses_line.expense_amount_percentage
+#                vals['baseImponible'] = purchase.untaxed_total
+#            else:
+#                #TODO MUST BE 10.5 OR 21
+#                vals['importe'] = expenses_line.expense_amount
             expense_lst.append(vals)
         return {'gasto' :  expense_lst}
 
