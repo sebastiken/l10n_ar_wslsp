@@ -644,7 +644,7 @@ class WSLSP(WebService):
                     continue
                 romaneo = summary_line.romaneo_id
                 species = summary_line.species_id
-                alive_kilo = int(summary_line.weight)
+                alive_kilos = int(summary_line.alive_kilos)
                 troop_number = romaneo.troop_number
                 head_qty = self._get_head_qty(summary_line)
             else:
@@ -655,7 +655,7 @@ class WSLSP(WebService):
                     continue
                 species = final_line.species
                 head_qty = final_line.quantity
-                alive_kilo = False
+                alive_kilos = False
                 troop_number = romaneo.troop_number
 
             category_code = species.get_afip_specie_code()
@@ -676,13 +676,13 @@ class WSLSP(WebService):
                 },
                 'nroTropa' : troop_number, #Optional
                 #'codCorte' : '1', #Optional
-                # 'cantidadKgVivo' : alive_kilo, #Optional
+                # 'cantidadKgVivo' : alive_kilos, #Optional
                 #'precioRecupero' : line.price_unit, #Optional
                 }
 
             if billing_type != 'alive_kilo':
                 head_qty = self._get_head_qty(summary_line)
-                vals.update({'cantidadKgVivo': alive_kilo})
+                vals.update({'cantidadKgVivo': alive_kilos})
 
             if int(breed_code) in (21, 99):
                 vals['raza'].update({'detalle' : species.name})
