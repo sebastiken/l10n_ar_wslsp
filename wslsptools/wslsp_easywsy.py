@@ -724,11 +724,15 @@ class WSLSP(WebService):
                 # BAD HACK: Commission
                 codExpense = 16
 
+            price_subtotal = inv_exp_line.price_subtotal
+            if price_subtotal < 0:
+                price_subtotal = (-1) * price_subtotal
+
             vals = {
                 'codGasto' : codExpense,
                 #'baseImponible' : None, #Optional
                 #'alicuota' : None, #Optional
-                'importe' : inv_exp_line.price_subtotal, #Optional
+                'importe' : price_subtotal, #Optional
                 'alicuotaIVA' : inv_exp_line.invoice_line_tax_id[0].amount * 100.0, #Optional
                 #'tipoIVANulo' : 'NG', #Optional
                 }
