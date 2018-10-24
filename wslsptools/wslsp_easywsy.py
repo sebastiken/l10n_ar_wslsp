@@ -619,7 +619,9 @@ class WSLSP(WebService):
         #No deberían existir 2 lineas asociadas al mismo summary
         qty_quarters = summary_line.quarters
         qty_halves = summary_line.halves
-        head_qty = (qty_quarters / 4.0) + (qty_halves / 2.0)
+        # Only for pork when head is separated
+        heads = summary_line.heads
+        head_qty = (qty_quarters / 4.0) + (qty_halves / 2.0) + heads
         return int(head_qty)
 
     def _get_items_to_liquidation(self):
