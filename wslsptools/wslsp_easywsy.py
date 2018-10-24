@@ -724,6 +724,8 @@ class WSLSP(WebService):
                 # BAD HACK: Commission
                 codExpense = 16
 
+            price_subtotal = inv_exp_line.price_subtotal
+
             vals = {
                 'codGasto' : codExpense,
                 #'baseImponible' : None, #Optional
