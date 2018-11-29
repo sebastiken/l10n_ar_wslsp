@@ -316,8 +316,13 @@ class AccountInvoice(models.Model):
                 raise except_orm(_('Error'),
                         _('The Invoice Number should be the format XXXX-XXXXXXXX'))
 
+            aut_lsp = False
+            conf = inv.get_wslsp_config()
+            if inv.pos_ar_id in conf.point_of_sale_ids:
+                aut_lsp = True
+
             invoice_vals = {
-                'aut_lsp' : True,
+                'aut_lsp' : aut_lsp,
                 'internal_number' : internal_number
             }
 
@@ -326,13 +331,15 @@ class AccountInvoice(models.Model):
 
     @api.multi
     def action_aut_cae(self):
-        res = super(AccountInvoice, self).action_aut_cae()
+        #res = super(AccountInvoice, self).action_aut_cae()
+
         for inv in self:
             if not inv.aut_lsp:
                 res = super(AccountInvoice, inv).action_aut_cae()
                 continue
 
             self._sanitize_taxes(inv)
+
             new_cr = self.pool.cursor()
             uid = self.env.user.id
             ctx = self.env.context
