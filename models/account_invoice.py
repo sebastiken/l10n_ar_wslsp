@@ -338,6 +338,13 @@ class AccountInvoice(models.Model):
                 res = super(AccountInvoice, inv).action_aut_cae()
                 continue
 
+            # Check if partner_id has same CUIT as company
+            if self.company_id.vat == inv.partner_id.vat:
+                raise except_orm(_('WSLSP Error!'),
+                        _('VAT Number is same as your company '
+                          'so it cannot be informed to AFIP.'
+                          'Check Number of Point of Sale.'))
+
             self._sanitize_taxes(inv)
 
             new_cr = self.pool.cursor()

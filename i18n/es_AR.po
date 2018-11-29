@@ -23,6 +23,12 @@ msgid "(update)"
 msgstr "(actualizar)"
 
 #. module: l10n_ar_wslsp
+#: field:ranch.expenses.type,afip_code_id:0
+#: field:ranch.species,afip_code_id:0
+msgid "AFIP code"
+msgstr "Código AFIP"
+
+#. module: l10n_ar_wslsp
 #: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:119
 #, python-format
 msgid "Activity Date is greater than today"
@@ -30,8 +36,6 @@ msgstr "La fecha de inicio de actividad es mayor que la fecha de hoy"
 
 #. module: l10n_ar_wslsp
 #: selection:wslsp.liquidation_type.codes,billing_type:0
-#: selection:wslsp.motive.codes,billing_type:0
-#: selection:wslsp.operation.codes,billing_type:0
 msgid "Alive Kilo"
 msgstr "Kilo Vivo"
 
@@ -50,6 +54,9 @@ msgstr "Ha ocurrido un error inesperado!!\n"
 
 #. module: l10n_ar_wslsp
 #: model:ir.ui.menu,name:l10n_ar_wslsp.menu_action_autoliquidation
+#: model:ir.ui.menu,name:l10n_ar_wslsp.menu_action_pork_autoliquidation
+#: field:wslsp.motive.codes,autoliquidation:0
+#: field:wslsp.operation.codes,autoliquidation:0
 msgid "Autoliquidation"
 msgstr "Autoliquidación"
 
@@ -96,6 +103,16 @@ msgstr "Cancelar factura"
 #: field:wslsp.config,categories_ids:0
 msgid "Categories"
 msgstr "Categorias"
+
+#. module: l10n_ar_wslsp
+#: selection:wslsp.breed.codes,ranch_type:0
+#: selection:wslsp.category.codes,ranch_type:0
+#: selection:wslsp.cut.codes,ranch_type:0
+#: selection:wslsp.operation.codes,ranch_type:0
+#: selection:wslsp.participant_character.codes,ranch_type:0
+#: selection:wslsp.tax.codes,ranch_type:0
+msgid "Cattle"
+msgstr "Vacuno"
 
 #. module: l10n_ar_wslsp
 #: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:178
@@ -256,8 +273,13 @@ msgid "Draft Refund"
 msgstr "Borrador de nota de crédito"
 
 #. module: l10n_ar_wslsp
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:70
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:270
+#: model:ir.model,name:l10n_ar_wslsp.model_ranch_purchase_data
+msgid "Email Thread"
+msgstr "Hilo de Mensajes"
+
+#. module: l10n_ar_wslsp
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:116
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:316
 #, python-format
 msgid "Error"
 msgstr "Error"
@@ -270,7 +292,7 @@ msgid "Error [%s] \n"
 "\n"
 ""
 msgstr "Error [%s] \n"
-" Descripcion: %s \n"
+" Descripción: %s \n"
 "\n"
 ""
 
@@ -295,17 +317,27 @@ msgid "Error when validating the invoice. Please, see it and send the invoice ag
 msgstr "Error al validar la factura. ¡Por favor, corrija los errores y envíe la factura nuevamente!"
 
 #. module: l10n_ar_wslsp
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:63
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:66
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:111
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:115
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:119
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:125
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:131
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:147
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:109
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:112
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:153
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:157
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:161
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:167
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:173
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:189
+#: code:addons/l10n_ar_wslsp/models/ranch_expenses_type.py:46
+#: code:addons/l10n_ar_wslsp/models/ranch_species.py:44
+#: code:addons/l10n_ar_wslsp/wizard/purchase_romaneo_from_data_wizard.py:29
+#: code:addons/l10n_ar_wslsp/wizard/purchase_romaneo_from_data_wizard.py:47
 #, python-format
 msgid "Error!"
 msgstr "Error!"
+
+#. module: l10n_ar_wslsp
+#: code:addons/l10n_ar_wslsp/models/ranch_expenses_type.py:47
+#, python-format
+msgid "Expense %s does not have configured afip expense"
+msgstr "Expense %s does not have configured afip expense"
 
 #. module: l10n_ar_wslsp
 #: view:wslsp.config:l10n_ar_wslsp.view_wslsp_config_form
@@ -435,6 +467,11 @@ msgstr "Líneas de factura"
 #: field:wslsp.voucher_type.codes,is_direct:0
 msgid "Is Direct?"
 msgstr "Es directo?"
+
+#. module: l10n_ar_wslsp
+#: field:account.invoice,is_lsp:0
+msgid "Is LSP"
+msgstr "Is LSP"
 
 #. module: l10n_ar_wslsp
 #: view:account.invoice:l10n_ar_wslsp.view_invoice_wslsp_purchase_data_form
@@ -592,7 +629,17 @@ msgid "Points of Sale"
 msgstr "Puntos de Venta"
 
 #. module: l10n_ar_wslsp
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:145
+#: selection:wslsp.breed.codes,ranch_type:0
+#: selection:wslsp.category.codes,ranch_type:0
+#: selection:wslsp.cut.codes,ranch_type:0
+#: selection:wslsp.operation.codes,ranch_type:0
+#: selection:wslsp.participant_character.codes,ranch_type:0
+#: selection:wslsp.tax.codes,ranch_type:0
+msgid "Pork"
+msgstr "Pork"
+
+#. module: l10n_ar_wslsp
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:187
 #, python-format
 msgid "Pos not found for invoice `%s` (id: %s)"
 msgstr "Punto de Venta no encontrado para la factura `%s` (id: %s)"
@@ -604,9 +651,15 @@ msgid "Provinces"
 msgstr "Provincias"
 
 #. module: l10n_ar_wslsp
-#: field:account.invoice,po_ids:0
-msgid "Purchase Orders"
-msgstr "Ordenes de Compra"
+#: field:account.invoice,purchase_data_type:0
+msgid "Purchase Data Type"
+msgstr "Tipo de Datos de Compra"
+
+#. module: l10n_ar_wslsp
+#: code:addons/l10n_ar_wslsp/wizard/purchase_romaneo_from_data_wizard.py:30
+#, python-format
+msgid "Purchase data %s has romaneos with different troop number"
+msgstr "Purchase data %s has romaneos with different troop number"
 
 #. module: l10n_ar_wslsp
 #: view:account.invoice:l10n_ar_wslsp.view_invoice_wslsp_purchase_data_form
@@ -614,9 +667,25 @@ msgid "Ranch"
 msgstr "Hacienda"
 
 #. module: l10n_ar_wslsp
+#: model:res.groups,name:l10n_ar_wslsp.group_ranch_autoliquidation_user
+msgid "Ranch Autoliquidation User"
+msgstr "Ranch Autoliquidation User"
+
+#. module: l10n_ar_wslsp
 #: view:account.invoice:l10n_ar_wslsp.view_invoice_wslsp_purchase_data_form
 msgid "Ranch Invoice"
 msgstr "Factura de Hacienda"
+
+#. module: l10n_ar_wslsp
+#: field:account.invoice.line,ranch_type:0
+#: field:wslsp.breed.codes,ranch_type:0
+#: field:wslsp.category.codes,ranch_type:0
+#: field:wslsp.cut.codes,ranch_type:0
+#: field:wslsp.operation.codes,ranch_type:0
+#: field:wslsp.participant_character.codes,ranch_type:0
+#: field:wslsp.tax.codes,ranch_type:0
+msgid "Ranch Type"
+msgstr "Tipo Faena"
 
 #. module: l10n_ar_wslsp
 #: view:account.invoice:l10n_ar_wslsp.view_invoice_wslsp_purchase_data_form
@@ -647,6 +716,12 @@ msgstr "Responsable"
 #: view:account.invoice:l10n_ar_wslsp.view_invoice_wslsp_purchase_data_form
 msgid "Set to Draft"
 msgstr "Establecer como Borrador"
+
+#. module: l10n_ar_wslsp
+#: code:addons/l10n_ar_wslsp/models/ranch_species.py:45
+#, python-format
+msgid "Specie %s does not have configured afip category"
+msgstr "Specie %s does not have configured afip category"
 
 #. module: l10n_ar_wslsp
 #: view:account.invoice:l10n_ar_wslsp.view_invoice_wslsp_purchase_data_form
@@ -729,10 +804,16 @@ msgid "There are duplicated voucher types"
 msgstr "Hay tipos de voucher duplicados"
 
 #. module: l10n_ar_wslsp
+#: code:addons/l10n_ar_wslsp/wizard/purchase_romaneo_from_data_wizard.py:48
+#, python-format
+msgid "There are romaneos with different troop number"
+msgstr "Hay romaneos con diferentes números de tropa"
+
+#. module: l10n_ar_wslsp
 #: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:132
 #, python-format
 msgid "There is another Invoice with a most recent date [%s] for the same Point of Sale and Denomination."
-msgstr "Hay otra factura con mayor fecha [%s] para el mismo Punto de Venta y Denominación."
+msgstr "Hay otra Factura con una fecha más reciente [%s] para el mismo Punto de Venta y Denominación."
 
 #. module: l10n_ar_wslsp
 #: code:addons/l10n_ar_wslsp/models/ranch_expenses_type.py:33
@@ -777,6 +858,12 @@ msgid "URL for WSLSP"
 msgstr "URL para WSLSP"
 
 #. module: l10n_ar_wslsp
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:344
+#, python-format
+msgid "VAT Number is same as your company so it cannot be informed to AFIP.Check Number of Point of Sale."
+msgstr "El CUIT es el mismo que su compañía y no puede ser informado a AFIP. Por favor, chequee el número del Punto de Venta."
+
+#. module: l10n_ar_wslsp
 #: view:account.invoice:l10n_ar_wslsp.view_invoice_wslsp_purchase_data_form
 msgid "Validate"
 msgstr "Validar"
@@ -791,7 +878,7 @@ msgstr "La Fecha del Comprobante es menor que la Fecha de Operación"
 #: view:wslsp.config:l10n_ar_wslsp.view_wslsp_config_form
 #: field:wslsp.config,voucher_type_ids:0
 msgid "Voucher Types"
-msgstr "Tipo de vauchers"
+msgstr "Tipo de Comprobantes"
 
 #. module: l10n_ar_wslsp
 #: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:115
@@ -814,7 +901,7 @@ msgstr "WSFE Error!"
 #. module: l10n_ar_wslsp
 #: view:account.invoice:l10n_ar_wslsp.view_invoice_wslsp_purchase_data_form
 msgid "WSFE Request Details"
-msgstr "WSLSP Detalles de Peticion"
+msgstr "WSLSP Detalles de Petición"
 
 #. module: l10n_ar_wslsp
 #: view:account.invoice:l10n_ar_wslsp.view_invoice_wslsp_purchase_data_form
@@ -824,7 +911,7 @@ msgstr "WSLSP Peticiones"
 #. module: l10n_ar_wslsp
 #: model:ir.actions.act_window,name:l10n_ar_wslsp.action_wslsp_autoliquidation
 msgid "WSLSP Autoliquidation"
-msgstr "WSLSP Autoliquidation"
+msgstr "WSLSP Autoliquidación"
 
 #. module: l10n_ar_wslsp
 #: model:ir.model,name:l10n_ar_wslsp.model_wslsp_breed_codes
