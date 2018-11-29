@@ -596,8 +596,7 @@ class WSLSP(WebService):
             summary_line = invoice_line.get_romaneo_summary_line()
             romaneo = summary_line.romaneo_id
         else:
-            #TODO: Solucionar esto.
-            romaneo = invoice.purchase_data_id.romaneo_ids[0]
+            romaneo = invoice.get_associated_romaneos()[0] #.purchase_data_id.romaneo_ids[0]
 
         vals = {
             'invoice' : invoice,
@@ -635,12 +634,26 @@ class WSLSP(WebService):
         if purchase_data.ranch_type == 'pork':
             billing_type = 'alive_kilo'
 
+        dead_head_lines = purchase_data.dead_head_line_ids
+        dead_head_invoice_lines = {}
+        for dh_line in dead_head_lines:
+            dead_head_invoice_lines[dh_line.invoice_line_id] = dh_line
+
         item_lst = []
         expense_lines = []
         for line in invoice_lines:
             partner = invoice.company_id.partner_id
 
-            if ranch_type == 'pork' or billing_type == 'performance':
+            # Dead Head Lines
+            if line in dead_head_invoice_lines:
+                dh_line = dead_head_invoice_lines[line]
+
+                romaneo = dh_line.romaneo_id
+                species = dh_line.species_id
+                alive_kilos = int(dh_line.alive_kilos)
+                troop_number = romaneo.troop_number
+                head_qty = 1
+            elif ranch_type == 'pork' or billing_type == 'performance':
                 summary_line = line.get_romaneo_summary_line()
                 #TODO: Sacar esta validacion cuando este configurado bien los gastos
                 if not summary_line:
