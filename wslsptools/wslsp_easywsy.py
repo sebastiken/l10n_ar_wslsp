@@ -88,7 +88,7 @@ class WSLSP(WebService):
             value = int(value)
         except Exception:
             return False
-        if not (1 <= int(value) <= 15):
+        if not (1 <= len(str(value)) <= 15):
             return False
         return True
 
@@ -198,9 +198,12 @@ class WSLSP(WebService):
 
     @wsapi.check(['nroRenspa'], reraise=True, sequence=20)
     def _check_renspa(value):
+        if not value:
+            return True
+
         res = re.search('(0[0-9]|1[0-9]|2[0-3])[.]\d{3}[.]\d{1}.\d{5}[\/]\w{2}', value)
         if not res:
-            raise except_orm(_("WSFE Error!"), _("Invalid Renspa!"))
+            raise except_orm(_("WSFE Error!"), _("Invalid Renspa %s!") % value)
         return True
 
     ###############################################################################
@@ -498,7 +501,7 @@ class WSLSP(WebService):
                     'datosLiquidacion' : liquidation_data,
                     'itemDetalleLiquidacion' : items_data,
                     'gasto' : expense_data or {},
-                    #'tributo' : tribute_data or {},
+                    'tributo' : tribute_data or {},
                     'datosAdicionales' : ' ',#Optional
                 },
             },
@@ -509,10 +512,10 @@ class WSLSP(WebService):
             data['GenerarLiquidacionReq']['solicitud'].update(dte_data)
         if guide_data:
             data['GenerarLiquidacionReq']['solicitud'].update(guide_data)
-        if expense_data:
-             data['GenerarLiquidacionReq']['solicitud'].update(expense_data)
-        if tribute_data:
-            data['GenerarLiquidacionReq']['solicitud'].update(tribute_data)
+#        if expense_data:
+#             data['GenerarLiquidacionReq']['solicitud'].update(expense_data)
+#        if tribute_data:
+#            data['GenerarLiquidacionReq']['solicitud'].update(tribute_data)
         return data
 
     def _get_operation_code(self):
@@ -758,20 +761,29 @@ class WSLSP(WebService):
 #                #TODO MUST BE 10.5 OR 21
 #                vals['importe'] = expenses_line.expense_amount
             expense_lst.append(vals)
-        return {'gasto' :  expense_lst}
+        return expense_lst
 
     def _get_tribute(self):
         tribute_lst = []
         invoice = self.data.invoice
+        taxes = invoice.tax_line.filtered(
+            lambda x: x.tax_id.tax_group != 'vat')
+
+        for tax in taxes:
+            code = self.config.get_tribute_code(tax.tax_id)
+
         # for tribute in tributes:
-        #     vals = { #Zero or more repetitions
-        #         'codTributo' : None,
-        #         'descripcion' : None, #Optional
-        #         'baseImponible' : None, #Optional
-        #         'alicuota' : None, #Optional
-        #         'importe' : None, #Optional
-        #     }
-        # tribute_lst.append({'tribute' : vals})
+            vals = { #Zero or more repetitions
+                'codTributo' : code,
+                'baseImponible' : abs(tax.base), #Optional
+                #'alicuota' : , #Optional
+                'importe' : abs(tax.amount), #Optional
+            }
+
+            if code == 99:
+                vals['descripcion'] = tax.name #Optional: only if other tributes
+            tribute_lst.append(vals)
+
         return tribute_lst
 
     def _get_guide(self):

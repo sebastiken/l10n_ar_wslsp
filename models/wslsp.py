@@ -121,6 +121,15 @@ class WSLSPConfig(models.Model):
                     _('The wslsp does not have a configuration for the operations [%s]') %(ranch_type))
         return operations[0].code
 
+    def get_tribute_code(self, tax_id):
+        taxes = self.tax_ids.filtered(
+                lambda x: x.tax_id == tax_id)
+        if not taxes:
+            raise except_orm(_('WSLSP Config Error!'),
+                    _('The wslsp does not have a configuration '
+                      'for the tax [%s]') % (tax_id.name))
+        return taxes[0].code
+
     @api.multi
     def _get_wslsp_obj(self):
         self.ensure_one()

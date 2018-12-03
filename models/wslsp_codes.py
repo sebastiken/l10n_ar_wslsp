@@ -143,4 +143,5 @@ class WSLSPTaxCodes(models.Model):
     ranch_type = fields.Selection([('cattle','Cattle'),('pork','Pork')], 'Ranch Type')
     code = fields.Char('Code', required=True, size=8)
     name = fields.Char('Desc', required=True, size=64)
+    tax_id = fields.Many2one('account.tax')
     wslsp_config_id = fields.Many2one('wslsp.config')

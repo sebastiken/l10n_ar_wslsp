@@ -145,6 +145,7 @@
                                         <field name="ranch_type" readonly="1"/>
                                     	<field name="name" readonly="1"/>
                                     	<field name="code" readonly="1"/>
+                                        <field name="tax_id"/>
                                 	</tree>
                             	</field>
 							</page>
