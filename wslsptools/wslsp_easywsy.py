@@ -475,7 +475,7 @@ class WSLSP(WebService):
 
         #Parseamos la respuesta y guardamos los datos para los logs
         invoice_vals = self.parse_invoice_response(response)
-        return invoice_vals
+        return invoice_vals, response
 
     def parse_invoice(self):
         invoice = self.data.invoice
@@ -560,32 +560,35 @@ class WSLSP(WebService):
     def _get_receiver_data(self):
         invoice = self.data.invoice
         company = invoice.company_id
-        #partner = invoice.partner_id
-        partner = invoice.company_id.partner_id
+        partner = invoice.partner_id
+        #partner = invoice.company_id.partner_id
 
         partner_cuit = partner.vat
         if self.config.homologation:
-            partner_cuit = '30160000011'#Cuit de pruebas
+            partner_cuit = '20160000024' #'30160000011'#Cuit de pruebas
 
-        nro_ruca = company.ruca
-        if self.config.homologation:
-            nro_ruca = '1011'
+#        nro_ruca = company.ruca
+#        if self.config.homologation:
+#            nro_ruca = '1011'
 
-        codCharacter = '4'
+        codCharacter = '1'
         if invoice.purchase_data_id.ranch_type == 'pork':
-            codCharacter = '102'
+            codCharacter = '100'
 
         iibb = partner.nro_insc_iibb
         vals = {
             'codCaracter' : codCharacter, #TODO
             'operador' : {
                 'cuit' : partner_cuit,
-                'iibb' : iibb,#Opcional
-                'nroRUCA' : nro_ruca,#'1011', #Opcional
-                #'nroRenspa' : '22.123.1.12345/A4', #Opcional
+                #'nroRUCA' : False, #nro_ruca,#'1011', #Opcional
+                'nroRenspa' : partner.renspa,#'22.123.1.12345/A4', #Opcional
                 #'cuitAutorizado' : '30678155469', #Opcional
             }
         }
+
+        if iibb:
+            vals['operador']['iibb'] = iibb
+
         return vals
 
     def _get_liquidation_data(self):
@@ -608,7 +611,7 @@ class WSLSP(WebService):
             #'lugarRealizacion' : False,#Opcional
             'codMotivo' : motive_code,
             'fechaRecepcion' : romaneo.entry_date,#'2018-07-24', #Opcional TODO
-            'fechaFaena' :romaneo.date,#'2018-07-25', #Opcional TODO
+            'fechaFaena' : romaneo.date,#'2018-07-25', #Opcional TODO
             #'frigorifico' : { #Opcional
             #    'cuit' : '30678155469',
             #    'nroPlanta' : '1',

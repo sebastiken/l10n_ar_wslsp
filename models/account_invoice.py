@@ -329,6 +329,14 @@ class AccountInvoice(models.Model):
             inv.write(invoice_vals)
         return True
 
+    def _check_perceptions(self):
+
+        for perception in self.perception_ids:
+            if not perception.amount < 0.0 or not perception.base:
+                raise except_orm(_('WSLSP Error!'),
+                        _('Perceptions amount has to be negative '
+                          'because it is a liquidation.'))
+
     @api.multi
     def action_aut_cae(self):
         #res = super(AccountInvoice, self).action_aut_cae()
@@ -346,6 +354,7 @@ class AccountInvoice(models.Model):
                           'Check Number of Point of Sale.'))
 
             self._sanitize_taxes(inv)
+            inv._check_perceptions()
 
             new_cr = self.pool.cursor()
             uid = self.env.user.id
@@ -353,7 +362,7 @@ class AccountInvoice(models.Model):
             conf = inv.get_wslsp_config()
             ws = conf._get_wslsp_obj()
             try:
-                invoice_vals = ws.generate_liquidation(inv)
+                invoice_vals, response = ws.generate_liquidation(inv)
 
                 #Attacheamos el PDF
                 pdf_data = invoice_vals.pop('pdf', False)
@@ -364,6 +373,53 @@ class AccountInvoice(models.Model):
                 # Commit the info that was written to the invoice and
                 # given by AFIP to prevent desynchronizations
                 self.env.cr.commit()
+
+                # Get new tributes from response
+                tax_lines = inv.tax_line.filtered(
+                    lambda x: x.tax_id.tax_group != 'vat')
+
+                codes = [
+                    int(conf.get_tribute_code(tax)) for tax in tax_lines.tax_id
+                ]
+
+                tributes = filter(lambda x: x.codTributo not in codes, response.tributo)
+                tax_l = []
+                # Retencion IVA
+                for tribute in tributes:
+                    tax = conf.tax_ids.filtered(lambda x: int(x.code) == tribute.codTributo)
+                    if not tax:
+                        raise except_orm(_('WSLSP Config Error!'),
+                            _('The wslsp does not have a configuration '
+                              'for the tribute with code [%s]') % (tribute.codTributo))
+
+                    tax_id = tax.tax_id
+                    tax_l.append((0, 0, {
+                        'name': tax_id.description or tax_id.name,
+                        'tax_id': tax_id.id,
+                        #'base': tribute.baseImponible,
+                        'amount': round(-float(tribute.importe), 2),
+                        #'base': tribute.baseImponible,
+                        'tax_amount': round(-float(tribute.importe), 2),
+                        'base_code_id': tax_id.base_code_id.id,
+                        'tax_code_id': tax_id.tax_code_id.id,
+                        'account_id': tax_id.account_collected_id.id,
+                    }))
+
+                if tax_l:
+                    # Add tributes to invoice and recompute
+                    inv.write({'tax_line': tax_l})
+                    inv.button_reset_taxes()
+
+                    # We have to recreate move_id
+                    # unlink origin move
+                    move_to_unlink = inv.move_id
+                    inv.move_id = False
+                    move_to_unlink.button_cancel()
+                    move_to_unlink.unlink()
+                    inv.action_move_create()
+
+                    self.env.cr.commit()
+
             except except_orm as e:
                 raise
             except Exception as e:
