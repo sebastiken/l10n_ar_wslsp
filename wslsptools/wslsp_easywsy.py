@@ -577,11 +577,11 @@ class WSLSP(WebService):
 
         iibb = partner.nro_insc_iibb
         vals = {
-            'codCaracter' : codCharacter, #TODO
-            'operador' : {
-                'cuit' : partner_cuit,
+            'codCaracter': codCharacter,  #TODO
+            'operador': {
+                'cuit': partner_cuit,
                 #'nroRUCA' : False, #nro_ruca,#'1011', #Opcional
-                'nroRenspa' : partner.renspa,#'22.123.1.12345/A4', #Opcional
+                'nroRenspa': invoice.renspa,#'22.123.1.12345/A4', #Opcional
                 #'cuitAutorizado' : '30678155469', #Opcional
             }
         }
