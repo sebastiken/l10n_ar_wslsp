@@ -382,43 +382,44 @@ class AccountInvoice(models.Model):
                     int(conf.get_tribute_code(tax)) for tax in tax_lines.tax_id
                 ]
 
-                tributes = filter(lambda x: x.codTributo not in codes, response.tributo)
-                tax_l = []
-                # Retencion IVA
-                for tribute in tributes:
-                    tax = conf.tax_ids.filtered(lambda x: int(x.code) == tribute.codTributo)
-                    if not tax:
-                        raise except_orm(_('WSLSP Config Error!'),
-                            _('The wslsp does not have a configuration '
-                              'for the tribute with code [%s]') % (tribute.codTributo))
+                if 'tributo' in response:
+                    tributes = filter(lambda x: x.codTributo not in codes, response.tributo)
+                    tax_l = []
+                    # Retencion IVA
+                    for tribute in tributes:
+                        tax = conf.tax_ids.filtered(lambda x: int(x.code) == tribute.codTributo)
+                        if not tax:
+                            raise except_orm(_('WSLSP Config Error!'),
+                                _('The wslsp does not have a configuration '
+                                  'for the tribute with code [%s]') % (tribute.codTributo))
 
-                    tax_id = tax.tax_id
-                    tax_l.append((0, 0, {
-                        'name': tax_id.description or tax_id.name,
-                        'tax_id': tax_id.id,
-                        #'base': tribute.baseImponible,
-                        'amount': round(-float(tribute.importe), 2),
-                        #'base': tribute.baseImponible,
-                        'tax_amount': round(-float(tribute.importe), 2),
-                        'base_code_id': tax_id.base_code_id.id,
-                        'tax_code_id': tax_id.tax_code_id.id,
-                        'account_id': tax_id.account_collected_id.id,
-                    }))
+                        tax_id = tax.tax_id
+                        tax_l.append((0, 0, {
+                            'name': tax_id.description or tax_id.name,
+                            'tax_id': tax_id.id,
+                            #'base': tribute.baseImponible,
+                            'amount': round(-float(tribute.importe), 2),
+                            #'base': tribute.baseImponible,
+                            'tax_amount': round(-float(tribute.importe), 2),
+                            'base_code_id': tax_id.base_code_id.id,
+                            'tax_code_id': tax_id.tax_code_id.id,
+                            'account_id': tax_id.account_collected_id.id,
+                        }))
 
-                if tax_l:
-                    # Add tributes to invoice and recompute
-                    inv.write({'tax_line': tax_l})
-                    inv.button_reset_taxes()
+                    if tax_l:
+                        # Add tributes to invoice and recompute
+                        inv.write({'tax_line': tax_l})
+                        inv.button_reset_taxes()
 
-                    # We have to recreate move_id
-                    # unlink origin move
-                    move_to_unlink = inv.move_id
-                    inv.move_id = False
-                    move_to_unlink.button_cancel()
-                    move_to_unlink.unlink()
-                    inv.action_move_create()
+                        # We have to recreate move_id
+                        # unlink origin move
+                        move_to_unlink = inv.move_id
+                        inv.move_id = False
+                        move_to_unlink.button_cancel()
+                        move_to_unlink.unlink()
+                        inv.action_move_create()
 
-                    self.env.cr.commit()
+                        self.env.cr.commit()
 
             except except_orm as e:
                 raise

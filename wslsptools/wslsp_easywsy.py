@@ -500,8 +500,8 @@ class WSLSP(WebService):
                     'receptor' : receiver_data,
                     'datosLiquidacion' : liquidation_data,
                     'itemDetalleLiquidacion' : items_data,
-                    'gasto' : expense_data or {},
-                    'tributo' : tribute_data or {},
+                    #'gasto' : expense_data or {},
+                    #'tributo' : tribute_data or {},
                     'datosAdicionales' : ' ',#Optional
                 },
             },
@@ -512,10 +512,10 @@ class WSLSP(WebService):
             data['GenerarLiquidacionReq']['solicitud'].update(dte_data)
         if guide_data:
             data['GenerarLiquidacionReq']['solicitud'].update(guide_data)
-#        if expense_data:
-#             data['GenerarLiquidacionReq']['solicitud'].update(expense_data)
-#        if tribute_data:
-#            data['GenerarLiquidacionReq']['solicitud'].update(tribute_data)
+        if expense_data:
+             data['GenerarLiquidacionReq']['solicitud']['gasto'] = expense_data
+        if tribute_data:
+            data['GenerarLiquidacionReq']['solicitud']['tributo'] = tribute_data
         return data
 
     def _get_operation_code(self):
@@ -530,7 +530,7 @@ class WSLSP(WebService):
         company = invoice.company_id
         pos_ar = invoice._get_pos()
         voucher_type = invoice._get_wslsp_voucher_type()
-        date = company.partner_id.date
+        date = '1952-10-01'  # company.partner_id.date
         number = invoice.split_number()[1]
         iibb = company.partner_id.nro_insc_iibb
 
@@ -542,6 +542,8 @@ class WSLSP(WebService):
         if invoice.purchase_data_id.ranch_type == 'pork':
             codCharacter = '102'
 
+        auth_vat = invoice.purchase_data_id.buyer_id.vat
+
         vals = {
             'puntoVenta' : pos_ar,
             'tipoComprobante' : voucher_type,
@@ -552,7 +554,7 @@ class WSLSP(WebService):
             'iibb' : iibb, #Opcional
             'nroRUCA' : nro_ruca,#'1011', #Opcional #VER EL CODIGO VERDADERO
             #'nroRenspa' : '22.123.1.12345/A4', #Opcional
-            #'cuitAutorizado' : '30678155469', #Opcional
+            'cuitAutorizado': auth_vat,
         }
 
         return vals
@@ -602,7 +604,8 @@ class WSLSP(WebService):
             summary_line = invoice_line.get_romaneo_summary_line()
             romaneo = summary_line.romaneo_id
         else:
-            romaneo = invoice.get_associated_romaneos()[0] #.purchase_data_id.romaneo_ids[0]
+            #romaneo = invoice.get_associated_romaneos()[0] #.purchase_data_id.romaneo_ids[0]
+            romaneo = invoice.purchase_data_id.romaneo_ids[0]
 
         vals = {
             'invoice' : invoice,
