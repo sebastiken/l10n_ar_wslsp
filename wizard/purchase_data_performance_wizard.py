@@ -21,10 +21,17 @@ class PurchaseDataPerformanceWizardd(models.TransientModel):
         res = super(PurchaseDataPerformanceWizardd, self).\
             _finalize_invoice_vals(purchase_data, invoice_vals)
 
+        fiscal_position_model = self.env['account.fiscal.position']
+
         # Check if it has to be lsp
         is_lsp = False
         if not purchase_data.auction_id:
             is_lsp = True
+
+            fiscal_position_id = invoice_vals['fiscal_position']
+            fiscal_position = fiscal_position_model.browse(
+                fiscal_position_id)
+            invoice_vals['denomination_id'] = fiscal_position.denomination_id.id
 
         res['is_lsp'] = is_lsp
         return res
@@ -69,10 +76,17 @@ class PurchaseDataPerformanceWizard(models.TransientModel):
         res = super(PurchaseDataPerformanceWizard, self).\
             _finalize_invoice_vals(purchase_data, invoice_vals)
 
+        fiscal_position_model = self.env['account.fiscal.position']
+
         # Check if it has to be lsp
         is_lsp = False
         if not purchase_data.auction_id:
             is_lsp = True
+
+            fiscal_position_id = invoice_vals['fiscal_position']
+            fiscal_position = fiscal_position_model.browse(
+                fiscal_position_id)
+            invoice_vals['denomination_id'] = fiscal_position.denomination_id.id
 
         res['is_lsp'] = is_lsp
         return res
