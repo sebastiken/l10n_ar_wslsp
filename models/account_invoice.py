@@ -230,12 +230,14 @@ class AccountInvoice(models.Model):
         FROM account_invoice
         WHERE internal_number ~ '^[0-9]{4}-[0-9]{8}$'
             AND pos_ar_id = %(pos_id)s
+            AND denomination_id = %(denomination_id)s
             AND state in %(state)s
             AND type = %(type)s
             AND purchase_data_id IS NOT NULL
         """
         q_vals = {
             'pos_id': invoice.pos_ar_id.id,
+            'denomination_id': invoice.denomination_id.id,
             'state': ('open', 'paid', 'cancel',),
             'type': invoice.type,
         }
