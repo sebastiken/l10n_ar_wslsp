@@ -45,6 +45,7 @@ class WSLSPConfig(models.Model):
             help="If true, there will be some validations that are disabled, for example, invoice number correlativeness")
     point_of_sale_ids = fields.Many2many('pos.ar', 'pos_ar_wslsp_rel', 'wslsp_config_id', 'pos_ar_id', 'Points of Sale')
     wsaa_ticket_id = fields.Many2one('wsaa.ta', 'Ticket Access')
+    config_id = fields.Many2one('wsaa.config', required=True)
 
     categories_ids = fields.One2many('wslsp.category.codes', 'wslsp_config_id' , 'Categories')
     cut_ids = fields.One2many('wslsp.cut.codes', 'wslsp_config_id' , 'Cuts')
@@ -73,14 +74,15 @@ class WSLSPConfig(models.Model):
 
         # Buscamos primero el wsaa que corresponde a esta compania
         # porque hay que recordar que son unicos por compania
-        wsaa_ids = wsaa_obj.search([('company_id','=', vals['company_id'])]).ids
+        #wsaa_ids = wsaa_obj.search([('company_id','=', vals['company_id'])]).ids
+        wsaa_id = vals['config_id']
         service_ids = service_obj.search([('name','=', 'wslsp')]).ids
-        if wsaa_ids:
+        if wsaa_id:
             ta_vals = {
                 'name': service_ids[0],
                 'company_id': vals['company_id'],
-                'config_id' : wsaa_ids[0],
-                }
+                'config_id' : wsaa_id,
+            }
 
             wsaa_ta = ta_obj.create(ta_vals)
             vals['wsaa_ticket_id'] = wsaa_ta.id
@@ -88,13 +90,17 @@ class WSLSPConfig(models.Model):
         return super(WSLSPConfig, self).create(vals)
 
     @api.model
-    def get_config(self):
+    def get_config(self, pos_ar):
         # Obtenemos la compania que esta utilizando en este momento este usuario
         company_id = self.env.user.company_id.id
         if not company_id:
             raise except_orm(_('Company Error!'), _('There is no company being used by this user'))
 
-        config = self.search([('company_id','=',company_id)])
+        config = self.search([
+            ('company_id', '=', company_id),
+            ('point_of_sale_ids', 'in', pos_ar.id),
+        ])
+
         if not config:
             raise except_orm(_('WSLSP Config Error!'), _('There is no WSLSP configuration set to this company'))
         return config

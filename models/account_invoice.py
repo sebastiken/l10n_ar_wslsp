@@ -118,8 +118,9 @@ class AccountInvoice(models.Model):
         return True
 
     def get_wslsp_config(self):
+
         config_obj = self.env['wslsp.config']
-        config = config_obj.get_config()
+        config = config_obj.get_config(self.pos_ar_id)
         return config
 
     @api.multi
