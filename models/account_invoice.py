@@ -338,7 +338,7 @@ class AccountInvoice(models.Model):
             if inv.purchase_data_id.ranch_type == 'pork' and \
                 not conf.homologation:
                 raise except_orm(_('Warning!'),
-                    ('You cannot send a pork autoliquidation to AFIP Prod'))
+                    _('You cannot send a pork autoliquidation to AFIP Prod'))
 
             invoice_vals = {
                 'aut_lsp' : aut_lsp,

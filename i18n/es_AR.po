@@ -163,6 +163,11 @@ msgid "Config WSLSP"
 msgstr "Configuración WSLSP"
 
 #. module: l10n_ar_wslsp
+#: field:wslsp.config,config_id:0
+msgid "Config id"
+msgstr "Config id"
+
+#. module: l10n_ar_wslsp
 #: model:ir.model,name:l10n_ar_wslsp.model_wslsp_config
 msgid "Configuration for WSLSP"
 msgstr "Configuracion para WSLSP"
@@ -606,6 +611,12 @@ msgid "Perceptions"
 msgstr "Percepciones"
 
 #. module: l10n_ar_wslsp
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:358
+#, python-format
+msgid "Perceptions amount has to be negative because it is a liquidation."
+msgstr "Los montos de Percepción deben ser negativos porque es una Liquidación."
+
+#. module: l10n_ar_wslsp
 #: selection:wslsp.liquidation_type.codes,billing_type:0
 #: selection:wslsp.motive.codes,billing_type:0
 #: selection:wslsp.operation.codes,billing_type:0
@@ -750,6 +761,11 @@ msgid "Tax Types"
 msgstr "Tipos de impuesto"
 
 #. module: l10n_ar_wslsp
+#: field:wslsp.tax.codes,tax_id:0
+msgid "Tax id"
+msgstr "Tax id"
+
+#. module: l10n_ar_wslsp
 #: view:account.invoice:l10n_ar_wslsp.view_invoice_wslsp_purchase_data_form
 #: view:wslsp.config:l10n_ar_wslsp.view_wslsp_config_form
 msgid "Taxes"
@@ -798,7 +814,19 @@ msgid "The wslsp does not have a configuration for the operations [%s]"
 msgstr "El wslsp no tiene una configuracion para las operaciones [%s]"
 
 #. module: l10n_ar_wslsp
-#: code:addons/l10n_ar_wslsp/models/account_invoice.py:98
+#: code:addons/l10n_ar_wslsp/models/wslsp.py:135
+#, python-format
+msgid "The wslsp does not have a configuration for the tax [%s]"
+msgstr "El WSLSP no tiene una configuración para el impuesto [%s]"
+
+#. module: l10n_ar_wslsp
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:414
+#, python-format
+msgid "The wslsp does not have a configuration for the tribute with code [%s]"
+msgstr "El WSLSP no tiene una configuración para el tributo con el código [%s]"
+
+#. module: l10n_ar_wslsp
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:152
 #, python-format
 msgid "There are duplicated voucher types"
 msgstr "Hay tipos de voucher duplicados"
@@ -909,6 +937,7 @@ msgid "WSFE Requests"
 msgstr "WSLSP Peticiones"
 
 #. module: l10n_ar_wslsp
+#: model:ir.actions.act_window,name:l10n_ar_wslsp.action_pork_wslsp_autoliquidation
 #: model:ir.actions.act_window,name:l10n_ar_wslsp.action_wslsp_autoliquidation
 msgid "WSLSP Autoliquidation"
 msgstr "WSLSP Autoliquidación"
@@ -939,6 +968,7 @@ msgid "WSLSP Config"
 msgstr "WSLSP Configuración"
 
 #. module: l10n_ar_wslsp
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:413
 #: code:addons/l10n_ar_wslsp/models/wslsp.py:99
 #: code:addons/l10n_ar_wslsp/models/wslsp.py:105
 #: code:addons/l10n_ar_wslsp/models/wslsp.py:112
@@ -961,13 +991,15 @@ msgstr "WSLSP Cortar Codigos"
 #. module: l10n_ar_wslsp
 #: view:wslsp.config:l10n_ar_wslsp.view_wslsp_config_form
 msgid "WSLSP Cuts"
-msgstr "WSLSP Cortar"
+msgstr "WSLSP Cortes"
 
 #. module: l10n_ar_wslsp
 #: code:addons/l10n_ar_wslsp/models/account_invoice.py:47
 #: code:addons/l10n_ar_wslsp/models/account_invoice.py:94
 #: code:addons/l10n_ar_wslsp/models/account_invoice.py:98
 #: code:addons/l10n_ar_wslsp/models/account_invoice.py:364
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:357
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:372
 #: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:131
 #: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:217
 #: code:addons/l10n_ar_wslsp/wslsptools/wslsp_easywsy.py:251
@@ -1071,6 +1103,12 @@ msgstr "WSLSP Tipos de voucher"
 #. module: l10n_ar_wslsp
 #: code:addons/l10n_ar_wslsp/models/account_invoice.py:133
 #, python-format
+msgid "Warning!"
+msgstr "Cuidado!"
+
+#. module: l10n_ar_wslsp
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:187
+#, python-format
 msgid "Wrong Number Sequence `%s` for invoice id: `%s`"
 msgstr "Secuencia de números incorrecta `%s` para factura id:`%s"
 
@@ -1111,12 +1149,18 @@ msgstr "Error POS para la factura id: `%s`"
 #: field:wslsp.tax.codes,wslsp_config_id:0
 #: field:wslsp.voucher_type.codes,wslsp_config_id:0
 msgid "Wslsp config id"
-msgstr "Wslsp config id"
+msgstr "Wslsp configuración"
 
 #. module: l10n_ar_wslsp
 #: view:account.invoice:l10n_ar_wslsp.view_invoice_wslsp_purchase_data_form
 msgid "XXXX-XXXXXXXX"
 msgstr "XXXX-XXXXXXXX"
+
+#. module: l10n_ar_wslsp
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:343
+#, python-format
+msgid "You cannot send a pork autoliquidation to AFIP Prod"
+msgstr "No se puede enviar una autoliquidación de Porcinos a AFIP Producción"
 
 #. module: l10n_ar_wslsp
 #: code:addons/l10n_ar_wslsp/models/account_invoice.py:242
