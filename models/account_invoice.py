@@ -34,7 +34,8 @@ class AccountInvoiceLine(models.Model):
     _inherit = 'account.invoice.line'
 
     breed_id = fields.Many2one('wslsp.breed.codes', 'Breed')
-    ranch_type = fields.Selection(related='invoice_id.purchase_data_id.ranch_type', string='Ranch Type')
+    ranch_type = fields.Selection(
+        related='invoice_id.purchase_data_id.ranch_type', string='Ranch Type')
 
     def get_romaneo_summary_line(self):
         summary_line_obj = self.env['ranch.purchase.romaneo.summary.line']
@@ -73,7 +74,8 @@ class AccountInvoiceLine(models.Model):
         final_line = self.get_romaneo_final_line()
         if not final_line:
             raise except_orm(_('WSLSP Error!'),
-                    _("Line Invoice [%s] does not have a ranch purchase data associated") %(self.name))
+                    _("Line Invoice [%s] does not have a ranch purchase " \
+                      "data associated") %(self.name))
         return final_line
 
     def _round_qty_and_adjust_price(self, price_unit, quantity):
@@ -86,8 +88,11 @@ class AccountInvoiceLine(models.Model):
 class AccountInvoice(models.Model):
     _inherit = 'account.invoice'
 
-    aut_lsp = fields.Boolean('Autorize', default=False, help='Autorize liquidation to AFIP')
-    purchase_data_type = fields.Selection(related='purchase_data_id.billing_type', string="Purchase Data Type", store=True)
+    aut_lsp = fields.Boolean(
+        'Autorize', default=False, help='Autorize liquidation to AFIP')
+    purchase_data_type = fields.Selection(
+        related='purchase_data_id.billing_type',
+        string="Purchase Data Type", store=True)
     is_lsp = fields.Boolean('Is LSP')
 
     @api.multi
@@ -103,18 +108,21 @@ class AccountInvoice(models.Model):
             res = super(AccountInvoice, self)._check_fiscal_values()
             return res
 
-        denomination_id = self.denomination_id and self.denomination_id.id or False
+        denomination_id = self.denomination_id and \
+            self.denomination_id.id or False
 
         if not denomination_id:
             raise except_orm(_('Error!'), _('Denomination not set in invoice'))
 
         if denomination_id not in self.pos_ar_id.denomination_ids.ids:
             raise except_orm(_('Error!'),
-                _('Point of sale has not the same denomination as the invoice.'))
+                _('Point of sale has not the same '
+                  'denomination as the invoice.'))
 
         if self.fiscal_position.denomination_id.id != denomination_id:
             raise except_orm(_('Error'),
-                _('The invoice denomination does not corresponds with this fiscal position.'))
+                _('The invoice denomination does not corresponds with '
+                  'this fiscal position.'))
         return True
 
     def get_wslsp_config(self):
@@ -135,10 +143,12 @@ class AccountInvoice(models.Model):
                 x.denomination_id.id == self.denomination_id.id))
         if not voucher_type:
             raise except_orm(_('WSLSP Error!'),
-                    _('There is not configured voucher type with document[%s] Is Direct[%s] Denomination[%s]') %
+                    _('There is not configured voucher type with document[%s] '
+                      'Is Direct[%s] Denomination[%s]') %
                     (self.type, True, self.denomination_id.name))
         if len(voucher_type) > 1:
-            raise except_orm(_('WSLSP Error!'), _('There are duplicated voucher types'))
+            raise except_orm(_('WSLSP Error!'),
+                _('There are duplicated voucher types'))
         return int(voucher_type.code)
 
 
@@ -323,6 +333,12 @@ class AccountInvoice(models.Model):
             conf = inv.get_wslsp_config()
             if inv.pos_ar_id in conf.point_of_sale_ids:
                 aut_lsp = True
+
+            # NOTE: Remove when pork in production
+            if inv.purchase_data_id.ranch_type == 'pork' and \
+                not conf.homologation:
+                raise except_orm(_('Warning!'),
+                    ('You cannot send a pork autoliquidation to AFIP Prod'))
 
             invoice_vals = {
                 'aut_lsp' : aut_lsp,
