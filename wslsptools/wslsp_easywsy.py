@@ -859,7 +859,9 @@ class WSLSP(WebService):
         #Completamos con los datos que enviamos de la factura
         invoice = self.data.invoice
         voucher_type_code = invoice._get_wslsp_voucher_type()
-        voucher_type = voucher_type_obj.search([('code', '=', voucher_type_code)])
+        voucher_type = voucher_type_obj.search(
+            [('code', '=', voucher_type_code),
+             ('wslsp_config_id', '=', self.config.id)])
         voucher_type_name = voucher_type.name
         pos = invoice._get_pos()
 
