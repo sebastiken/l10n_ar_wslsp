@@ -335,7 +335,7 @@ class AccountInvoice(models.Model):
                 aut_lsp = True
 
             # NOTE: Remove when pork in production
-            if inv.purchase_data_id.ranch_type == 'pork' and \
+            if aut_lsp and inv.purchase_data_id.ranch_type == 'pork' and \
                 not conf.homologation:
                 raise except_orm(_('Warning!'),
                     _('You cannot send a pork autoliquidation to AFIP Prod'))

@@ -673,6 +673,9 @@ class WSLSP(WebService):
                 alive_kilos = int(summary_line.alive_kilos)
                 troop_number = romaneo.troop_number
                 head_qty = self._get_head_qty(summary_line)
+                # Head qty cannot be zero. When there are less than 4 quarters,
+                # we need to inform 1 head
+                head_qty = head_qty or 1
             else:
                 romaneo = invoice.purchase_data_id.romaneo_ids[0]
                 final_line = line.get_romaneo_final_line()
@@ -858,6 +861,7 @@ class WSLSP(WebService):
         #No hay rechazos ni aprobaciones, solo hay errores.
         #Completamos con los datos que enviamos de la factura
         invoice = self.data.invoice
+
         voucher_type_code = invoice._get_wslsp_voucher_type()
         voucher_type = voucher_type_obj.search(
             [('code', '=', voucher_type_code),
