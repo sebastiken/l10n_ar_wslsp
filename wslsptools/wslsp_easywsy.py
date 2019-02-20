@@ -748,8 +748,9 @@ class WSLSP(WebService):
                 expense_type = expense.expense_type_id
                 codExpense = expense_type.get_afip_expense_code()
             else:
-                # BAD HACK: Commission
-                codExpense = 16
+                # Commission
+                expense_type = None
+                codExpense = inv_exp_line.commision_config_id.afip_code_id.code
 
             price_subtotal = inv_exp_line.price_subtotal
 
@@ -761,7 +762,7 @@ class WSLSP(WebService):
                 'alicuotaIVA' : inv_exp_line.invoice_line_tax_id[0].amount * 100.0, #Optional
                 #'tipoIVANulo' : 'NG', #Optional
                 }
-            if int(expense_type.code) == 99:
+            if expense_type and int(expense_type.code) == 99:
                 vals['descripcion'] = inv_exp_line.name
 #            if expenses_line.amount_type == 'percentage':
 #                vals['alicuota'] = expenses_line.expense_amount_percentage
