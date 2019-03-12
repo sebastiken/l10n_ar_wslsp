@@ -331,14 +331,8 @@ class AccountInvoice(models.Model):
 
             aut_lsp = False
             conf = inv.get_wslsp_config()
-            if inv.pos_ar_id in conf.point_of_sale_ids:
+            if conf and inv.pos_ar_id in conf.point_of_sale_ids:
                 aut_lsp = True
-
-            # NOTE: Remove when pork in production
-            if aut_lsp and inv.purchase_data_id.ranch_type == 'pork' and \
-                not conf.homologation:
-                raise except_orm(_('Warning!'),
-                    _('You cannot send a pork autoliquidation to AFIP Prod'))
 
             invoice_vals = {
                 'aut_lsp' : aut_lsp,
