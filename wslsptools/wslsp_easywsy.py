@@ -741,6 +741,7 @@ class WSLSP(WebService):
     def _get_expenses(self, expense_invoice_lines):
         expense_lst = []
         invoice = self.data.invoice
+        voucher_type = invoice._get_wslsp_voucher_type()
         #purchase_data = invoice.purchase_data_id
 
         for inv_exp_line in expense_invoice_lines:
@@ -760,9 +761,14 @@ class WSLSP(WebService):
                 #'baseImponible' : None, #Optional
                 #'alicuota' : None, #Optional
                 'importe' : abs(price_subtotal), #Optional
-                'alicuotaIVA' : inv_exp_line.invoice_line_tax_id[0].amount * 100.0, #Optional
                 #'tipoIVANulo' : 'NG', #Optional
                 }
+
+            tax = inv_exp_line.invoice_line_tax_id
+            if tax:
+                if int(voucher_type) != 189: #No se informa si la denominacion es C
+                    vals['alicuotaIVA'] = float("{0:.2f}".format(tax.amount * 100))
+
             if expense_type and int(expense_type.code) == 99:
                 vals['descripcion'] = inv_exp_line.name
 #            if expenses_line.amount_type == 'percentage':
