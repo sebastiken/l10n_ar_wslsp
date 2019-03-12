@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <record model="ir.ui.view" id="ranch_commision_config_account_form_view">
+            <field name="name">ranch.commision.config.account.form</field>
+            <field name="model">ranch.commision.config</field>
+            <field name="inherit_id" ref="rafalim_cattle_ranch.view_ranch_commision_config_form"/>
+            <field name="arch" type="xml">
+                <field name="product_id" position="after">
+                    <field name="afip_code_id"/>
+                </field>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="ranch_commision_config_account_tree_view">
+            <field name="name">ranch.commision.config.account.tree</field>
+            <field name="model">ranch.commision.config</field>
+            <field name="inherit_id" ref="rafalim_cattle_ranch.view_ranch_commision_config_tree"/>
+            <field name="arch" type="xml">
+                <field name="product_id" position="after">
+                    <field name="afip_code_id"/>
+                </field>
+            </field>
+        </record>
+    </data>
+
+</openerp>

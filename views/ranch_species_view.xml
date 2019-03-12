@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <record model="ir.ui.view" id="view_ranch_species_account_form">
+            <field name="name">ranch.species.account.form</field>
+            <field name="model">ranch.species</field>
+            <field name="inherit_id" ref="rafalim_cattle_ranch.ranch_species_form_view"/>
+            <field name="arch" type="xml">
+                <field name="ranch_type" position="after">
+                    <field name="afip_code_id" domain="[('ranch_type', '=', ranch_type)]"/>
+                </field>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="view_ranch_species_account_tree">
+            <field name="name">ranch.species.account.tree</field>
+            <field name="model">ranch.species</field>
+            <field name="inherit_id" ref="rafalim_cattle_ranch.ranch_species_tree_view"/>
+            <field name="arch" type="xml">
+                <field name="ranch_type" position="after">
+                    <field name="afip_code_id"/>
+                </field>
+            </field>
+        </record>
+
+    </data>
+</openerp>

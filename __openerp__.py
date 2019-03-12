@@ -23,17 +23,26 @@
 {
     "name": "l10n_ar_wslsp",
     'category': "Others",
-    'version': "8.0.1.0.0",
+    'version': "8.0.1.0.1",
     "author": "Eynes",
     "description": "AFIP livestock sector liquidation webservice (LSLWS - WSLSP) management",
-    "depends": [
-        "base", "l10n_ar_point_of_sale", "l10n_ar_wsaa",
-    ],
+    "depends": ["rafalim_cattle_account",
+                "l10n_ar_wsfe",
+                "rafalim_payment_system"],
     "data": [
         "data/wslsp_data.xml",
+        "data/groups_data.xml",
+        "views/company_view.xml",
         "views/wslsp_view.xml",
+        "views/ranch_expenses_type_view.xml",
+        "views/ranch_commision_view.xml",
+        "views/ranch_species_view.xml",
+        "views/account_invoice_view.xml",
+        "security/ir.model.access.csv",
     ],
-    
     "installable": True,
     "application": True,
+    "python": [
+        "git+https://gitlab.e-mips.com.ar/infra/easywsy.git@py2",
+    ],
 }
