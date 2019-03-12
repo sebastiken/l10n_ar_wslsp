@@ -101,8 +101,6 @@ class WSLSPConfig(models.Model):
             ('point_of_sale_ids', 'in', pos_ar.id),
         ])
 
-        if not config:
-            raise except_orm(_('WSLSP Config Error!'), _('There is no WSLSP configuration set to this company'))
         return config
 
     def get_motive_code(self):

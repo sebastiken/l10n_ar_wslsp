@@ -180,13 +180,14 @@ class WSLSP(WebService):
 
     @wsapi.check(['nroComprobante'], reraise=True, sequence=20)
     def _check_invoice_number(value, invoice):
-        conf = invoice.get_wslsp_config()
-        wslsp_next_number = invoice.get_next_wslsp_number(conf=conf)
-        if int(wslsp_next_number) != int(value):
-            raise except_orm(_("WSFE Error!"),
-                    _("The next number in the system [%d] does not " +
-                      "match the one obtained from AFIP WSLSP [%d]") %
-                    (int(value), int(wslsp_next_number)))
+        if invoice:
+            conf = invoice.get_wslsp_config()
+            wslsp_next_number = invoice.get_next_wslsp_number(conf=conf)
+            if int(wslsp_next_number) != int(value):
+                raise except_orm(_("WSFE Error!"),
+                        _("The next number in the system [%d] does not " +
+                          "match the one obtained from AFIP WSLSP [%d]") %
+                        (int(value), int(wslsp_next_number)))
         return True
 
     @wsapi.check(['nroDTE'], reraise=True, sequence=20)
