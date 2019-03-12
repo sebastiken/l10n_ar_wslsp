@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data noupdate="1">
+
+        <record id="afipws_service_wsfe" model="afipws.service">
+            <field name="name">wslsp</field>
+            <field name="description">Web Service de Liquidacion de Sector Pecuario</field>
+        </record>
+    </data>
+</openerp>

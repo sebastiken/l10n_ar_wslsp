@@ -1,0 +1,9 @@
+<openerp>
+	<data>
+		<record model="res.groups" id="group_ranch_autoliquidation_user">
+			<field name="name">Ranch Autoliquidation User</field>
+	        <field name="category_id" ref="rafalim_cattle_ranch.module_category_ranch_management"/>
+			<field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+		</record>
+	</data>
+</openerp>

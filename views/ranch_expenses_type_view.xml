@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <record model="ir.ui.view" id="ranch_expenses_type_account_form_view">
+            <field name="name">ranch.expenses.type.account.form</field>
+            <field name="model">ranch.expenses.type</field>
+            <field name="inherit_id" ref="rafalim_cattle_ranch.ranch_expenses_type_form_view"/>
+            <field name="arch" type="xml">
+                <field name="amount_type" position="after">
+                    <field name="afip_code_id"/>
+                </field>
+            </field>
+        </record>
+        <record model="ir.ui.view" id="ranch_expenses_type_account_tree_view">
+            <field name="name">ranch.expenses.type.account.tree</field>
+            <field name="model">ranch.expenses.type</field>
+            <field name="inherit_id" ref="rafalim_cattle_ranch.ranch_expenses_type_tree_view"/>
+            <field name="arch" type="xml">
+                <field name="amount_type" position="after">
+                    <field name="afip_code_id"/>
+                </field>
+            </field>
+        </record>
+    </data>
+</openerp>
