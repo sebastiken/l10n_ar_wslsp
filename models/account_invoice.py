@@ -26,6 +26,8 @@ import re
 
 from openerp import _, api, exceptions, fields, models
 from openerp.exceptions import except_orm
+from  openerp.addons.l10n_ar_wslsp.wslsptools.wslsp_easywsy \
+    import InvoiceNumberException
 
 _logger = logging.getLogger(__name__)
 
@@ -292,11 +294,11 @@ class AccountInvoice(models.Model):
     # Heredado para no cancelar si es una liquidacion del sector pecuario
     @api.multi
     def action_cancel(self):
-        for inv in self:
-            if inv.aut_lsp:
-                err = _("You cannot cancel an Electronic livestock sector " +
-                        "liquidation because it has been informed to AFIP.")
-                raise exceptions.ValidationError(err)
+#        for inv in self:
+#            if inv.aut_lsp:
+#                err = _("You cannot cancel an Electronic livestock sector " +
+#                        "liquidation because it has been informed to AFIP.")
+#                raise exceptions.ValidationError(err)
         return super(AccountInvoice, self).action_cancel()
 
     @api.multi
@@ -351,6 +353,112 @@ class AccountInvoice(models.Model):
                           'because it is a liquidation.'))
 
     @api.multi
+    def _add_vat_retention(self, response):
+
+        self.ensure_one()
+
+        conf = self.get_wslsp_config()
+
+        # Get new trisbutes from response
+        tax_lines = self.tax_line.filtered(
+            lambda x: x.tax_id.tax_group != 'vat')
+
+        codes = [
+            int(conf.get_tribute_code(tax)) for tax in tax_lines.tax_id
+        ]
+
+        if 'tributo' in response:
+            tributes = filter(lambda x: x.codTributo not in codes, response.tributo)
+            tax_l = []
+            # Retencion IVA
+            for tribute in tributes:
+                tax = conf.tax_ids.filtered(lambda x: int(x.code) == tribute.codTributo)
+                if not tax:
+                    raise except_orm(_('WSLSP Config Error!'),
+                        _('The wslsp does not have a configuration '
+                          'for the tribute with code [%s]') % (tribute.codTributo))
+
+                tax_id = tax.tax_id
+                tax_l.append((0, 0, {
+                    'name': tax_id.description or tax_id.name,
+                    'tax_id': tax_id.id,
+                    #'base': tribute.baseImponible,
+                    'amount': round(-float(tribute.importe), 2),
+                    #'base': tribute.baseImponible,
+                    'tax_amount': round(-float(tribute.importe), 2),
+                    'base_code_id': tax_id.base_code_id.id,
+                    'tax_code_id': tax_id.tax_code_id.id,
+                    'account_id': tax_id.account_collected_id.id,
+                }))
+
+            if not tax_l:
+                return False
+
+            # Add tributes to invoice and recompute
+            self.write({'tax_line': tax_l})
+            self.button_reset_taxes()
+
+            # We have to recreate move_id
+            # unlink origin move
+            move_to_unlink = self.move_id
+            self.move_id = False
+            move_to_unlink.button_cancel()
+            move_to_unlink.unlink()
+            self.action_move_create()
+
+            return True
+
+    @api.model
+    def synchronize_liquidation(self, ws, pos_ar, number):
+
+        invoice_vals, response = ws.get_liquidation_by_number(pos_ar, number)
+        dte = response.dte[0].nroDTE
+
+        invoice_domain = [
+            ('is_lsp', '=', True),
+            ('state', '=', 'draft'),
+            ('dte', '=', dte),
+        ]
+
+        if not ws.config.homologation:
+            # When in homologation, receptor.cuit is always the afip cuit
+            invoice_domain.append(
+                ('partner_id.vat', '=', response.receptor.cuit))
+
+        invoice = self.search(invoice_domain)
+
+        if not invoice:
+            raise except_orm(_("WSLSP Error"),
+                             _("Synchronize process failed!"))
+
+        invoice.action_move_create()
+
+        # Create and attach pdf invoice from AFIP
+        pdf_data = invoice_vals.pop('pdf', False)
+        if pdf_data:
+            invoice.attach_liquidation_report(pdf_data)
+
+        # Add Vat Retention
+        invoice._add_vat_retention(response)
+
+        # Escribimos los campos necesarios de la factura
+        invoice.write(invoice_vals)
+
+        invoice_name = self.name_get()[0][1]
+        if not self.reference:
+            ref = invoice_name
+        else:
+            ref = '%s [%s]' % (invoice_name, self.reference)
+
+        # Update move reference
+        invoice._update_reference(ref)
+
+        # Llamamos al workflow para que siga su curso
+        invoice.signal_workflow('invoice_massive_open')
+
+        return invoice
+
+    @api.multi
     def action_aut_cae(self):
         #res = super(AccountInvoice, self).action_aut_cae()
 
@@ -358,6 +466,9 @@ class AccountInvoice(models.Model):
             if not inv.aut_lsp:
                 res = super(AccountInvoice, inv).action_aut_cae()
                 continue
+
+            # In case of syncrhonization
+            invoice_to_validate = None
 
             # Check if partner_id has same CUIT as company
             if self.company_id.vat == inv.partner_id.vat:
@@ -377,65 +488,33 @@ class AccountInvoice(models.Model):
             try:
                 invoice_vals, response = ws.generate_liquidation(inv)
 
-                #Attacheamos el PDF
+                # Create and attach pdf invoice from AFIP
                 pdf_data = invoice_vals.pop('pdf', False)
                 if pdf_data:
                     inv.attach_liquidation_report(pdf_data)
                 inv.write(invoice_vals)
 
-                # Commit the info that was written to the invoice and
-                # given by AFIP to prevent desynchronizations
+                # Add Vat Retention
+                inv._add_vat_retention(response)
                 self.env.cr.commit()
 
-                # Get new tributes from response
-                tax_lines = inv.tax_line.filtered(
-                    lambda x: x.tax_id.tax_group != 'vat')
+            except InvoiceNumberException, e:
+                self.env.cr.rollback()
+                number_to_synchro = e.number-1
 
-                codes = [
-                    int(conf.get_tribute_code(tax)) for tax in tax_lines.tax_id
-                ]
+                invoice_synchronized = self.synchronize_liquidation(
+                    ws, inv.pos_ar_id.name, number_to_synchro)
 
-                if 'tributo' in response:
-                    tributes = filter(lambda x: x.codTributo not in codes, response.tributo)
-                    tax_l = []
-                    # Retencion IVA
-                    for tribute in tributes:
-                        tax = conf.tax_ids.filtered(lambda x: int(x.code) == tribute.codTributo)
-                        if not tax:
-                            raise except_orm(_('WSLSP Config Error!'),
-                                _('The wslsp does not have a configuration '
-                                  'for the tribute with code [%s]') % (tribute.codTributo))
+                # If invoice synchronized is THIS invoice
+                # re validate THIS inv
+                if invoice_synchronized != inv:
+                    invoice_to_validate = inv
 
-                        tax_id = tax.tax_id
-                        tax_l.append((0, 0, {
-                            'name': tax_id.description or tax_id.name,
-                            'tax_id': tax_id.id,
-                            #'base': tribute.baseImponible,
-                            'amount': round(-float(tribute.importe), 2),
-                            #'base': tribute.baseImponible,
-                            'tax_amount': round(-float(tribute.importe), 2),
-                            'base_code_id': tax_id.base_code_id.id,
-                            'tax_code_id': tax_id.tax_code_id.id,
-                            'account_id': tax_id.account_collected_id.id,
-                        }))
-
-                    if tax_l:
-                        # Add tributes to invoice and recompute
-                        inv.write({'tax_line': tax_l})
-                        inv.button_reset_taxes()
-
-                        # We have to recreate move_id
-                        # unlink origin move
-                        move_to_unlink = inv.move_id
-                        inv.move_id = False
-                        move_to_unlink.button_cancel()
-                        move_to_unlink.unlink()
-                        inv.action_move_create()
-
-                        self.env.cr.commit()
+                self.env.cr.commit()
 
             except except_orm as e:
                 raise
+
             except Exception as e:
                 raise except_orm(_('WSLSP Validation Error'),
                         _('Error received was: \n %s') % repr(e))
@@ -451,6 +530,9 @@ class AccountInvoice(models.Model):
                     ws.log_request(new_env)
                     new_cr.commit()
                     new_cr.close()
+
+            if invoice_to_validate:
+                invoice_to_validate.signal_workflow('invoice_open')
         return True
 
     @api.one
