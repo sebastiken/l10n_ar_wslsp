@@ -21,6 +21,9 @@
 #
 ##############################################################################
 
+from suds.client import Client
+from suds.cache import NoCache
+
 from openerp import _, api, exceptions, fields, models
 from openerp.exceptions import except_orm
 from openerp.addons.decimal_precision import decimal_precision as dp
@@ -135,9 +138,13 @@ class WSLSPConfig(models.Model):
         return taxes[0].code
 
     @api.multi
-    def _get_wslsp_obj(self):
+    def _get_wslsp_obj(self, no_cache=False):
         self.ensure_one()
-        ws = self._webservice_class(self, self.url)
+        client = False
+        if no_cache:
+            client = Client(self.url, cache=NoCache())
+
+        ws = self._webservice_class(self, url=self.url, client=client)
         return ws
 
     #TODO: Arreglar esta funcion
@@ -154,7 +161,7 @@ class WSLSPConfig(models.Model):
     def get_wslsp_categories(self):
         category_model = self.env['wslsp.category.codes']
 
-        ws = self._get_wslsp_obj()
+        ws = self._get_wslsp_obj(no_cache=True)
         category_lst = ws.get_categories()
 
         # Search for all codes in Odoo that are not in the list
@@ -179,7 +186,7 @@ class WSLSPConfig(models.Model):
 
     @api.multi
     def get_wslsp_cuts(self):
-        ws = self._get_wslsp_obj()
+        ws = self._get_wslsp_obj(no_cache=True)
         cut_lst = ws.get_cuts()
         for cut in cut_lst:
             code = cut['code']
@@ -193,7 +200,7 @@ class WSLSPConfig(models.Model):
 
     @api.multi
     def get_wslsp_participant_characters(self, ranch_type):
-        ws = self._get_wslsp_obj()
+        ws = self._get_wslsp_obj(no_cache=True)
         part_lst = ws.get_participant_characters()
         for part in part_lst:
             code = part['code']
@@ -208,7 +215,7 @@ class WSLSPConfig(models.Model):
 
     @api.multi
     def get_wslsp_expenses(self):
-        ws = self._get_wslsp_obj()
+        ws = self._get_wslsp_obj(no_cache=True)
         expense_lst = ws.get_expenses()
         for expense in expense_lst:
             res = self.expenses_ids.filtered(lambda x: x.code ==  expense['code'])
@@ -220,7 +227,7 @@ class WSLSPConfig(models.Model):
 
     @api.multi
     def get_wslsp_motives(self):
-        ws = self._get_wslsp_obj()
+        ws = self._get_wslsp_obj(no_cache=True)
         motive_lst = ws.get_motives()
         for motive in motive_lst:
             res = self.motive_ids.filtered(lambda x: x.code ==  motive['code'])
@@ -232,7 +239,7 @@ class WSLSPConfig(models.Model):
 
     @api.multi
     def get_wslsp_operations(self):
-        ws = self._get_wslsp_obj()
+        ws = self._get_wslsp_obj(no_cache=True)
         operation_lst = ws.get_operations()
         for operation in operation_lst:
             code = operation['code']
@@ -246,7 +253,7 @@ class WSLSPConfig(models.Model):
 
     @api.multi
     def get_wslsp_provinces(self):
-        ws = self._get_wslsp_obj()
+        ws = self._get_wslsp_obj(no_cache=True)
         province_lst = ws.get_states()
         for province in province_lst:
             res = self.province_ids.filtered(lambda x: x.code ==  province['code'])
@@ -258,7 +265,7 @@ class WSLSPConfig(models.Model):
 
     @api.multi
     def get_wslsp_breeds(self):
-        ws = self._get_wslsp_obj()
+        ws = self._get_wslsp_obj(no_cache=True)
         breed_lst = ws.get_breeds()
         for breed in breed_lst:
             code = breed['code']
@@ -272,7 +279,7 @@ class WSLSPConfig(models.Model):
 
     @api.multi
     def get_wslsp_voucher_types(self):
-        ws = self._get_wslsp_obj()
+        ws = self._get_wslsp_obj(no_cache=True)
         voucher_type_lst = ws.get_voucher_type()
         for voucher_type in voucher_type_lst:
             res = self.voucher_type_ids.filtered(lambda x: x.code == voucher_type['code'])
@@ -284,7 +291,7 @@ class WSLSPConfig(models.Model):
 
     @api.multi
     def get_wslsp_liquidation_types(self):
-        ws = self._get_wslsp_obj()
+        ws = self._get_wslsp_obj(no_cache=True)
         liquidation_lst = ws.get_liquidation_type()
         for liquidation in liquidation_lst:
             res = self.liquidation_type_ids.filtered(lambda x: x.code == liquidation['code'])
@@ -296,7 +303,7 @@ class WSLSPConfig(models.Model):
 
     @api.multi
     def get_wslsp_taxes(self):
-        ws = self._get_wslsp_obj()
+        ws = self._get_wslsp_obj(no_cache=True)
         taxes_lst = ws.get_tributes()
         for taxes in taxes_lst:
             code = taxes['code']
