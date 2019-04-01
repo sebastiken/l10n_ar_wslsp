@@ -152,12 +152,25 @@ class WSLSPConfig(models.Model):
 
     @api.multi
     def get_wslsp_categories(self):
+        category_model = self.env['wslsp.category.codes']
+
         ws = self._get_wslsp_obj()
         category_lst = ws.get_categories()
+
+        # Search for all codes in Odoo that are not in the list
+        codes = map(lambda c: c['code'], category_lst)
+        categories_to_disable = category_model.search([
+            ('code', 'not in', codes),
+            ('wslsp_config_id', '=', self.id),
+        ])
+        # ...and deactivate them all
+        categories_to_disable.write({'active': False})
+
         for category in category_lst:
             code = category['code']
             ranch_type = category['ranch_type']
-            res = self.categories_ids.filtered(lambda x: x.code == code and x.ranch_type == ranch_type)
+            res = self.categories_ids.filtered(
+                lambda x: x.code == code and x.ranch_type == ranch_type)
             if not res:
                 self.write({'categories_ids' : [(0, False, category)]})
             else :
