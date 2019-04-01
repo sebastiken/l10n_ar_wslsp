@@ -33,6 +33,15 @@ import re
 
 _logger = logging.getLogger(__name__)
 
+class InvoiceNumberException(Exception):
+
+    def __init__(self, message, number):
+        self.message = message
+        self.number = number
+
+    def __str__(self):
+        return self.message
+
 
 AFIP_DATE_FORMAT = '%Y-%m-%d'
 DATE_FORMAT = '%Y-%m-%d'
@@ -180,14 +189,23 @@ class WSLSP(WebService):
 
     @wsapi.check(['nroComprobante'], reraise=True, sequence=20)
     def _check_invoice_number(value, invoice):
-        if invoice:
-            conf = invoice.get_wslsp_config()
-            wslsp_next_number = invoice.get_next_wslsp_number(conf=conf)
-            if int(wslsp_next_number) != int(value):
-                raise except_orm(_("WSFE Error!"),
-                        _("The next number in the system [%d] does not " +
-                          "match the one obtained from AFIP WSLSP [%d]") %
-                        (int(value), int(wslsp_next_number)))
+
+        if not invoice:
+            # BAD HACK: if not invoice, make no check
+            # This is because nroComprobante is used in operation
+            # consultarLiquidacionPorNroComprobante.
+            # Maybe we have to do wsapi.check for (operation, field) key
+            return True
+
+        conf = invoice.get_wslsp_config()
+        wslsp_next_number = invoice.get_next_wslsp_number(conf=conf)
+        if int(wslsp_next_number) != int(value):
+            raise InvoiceNumberException(
+                _("The next number in the system [%d] does not " +
+                  "match the one obtained from AFIP WSLSP [%d]") %
+                (int(value), int(wslsp_next_number)),
+                wslsp_next_number)
+
         return True
 
     @wsapi.check(['nroDTE'], reraise=True, sequence=20)
@@ -473,6 +491,26 @@ class WSLSP(WebService):
 
         #Enviamos la liquidación
         response = self.wslsp_query(invoice_data, 'generarLiquidacion')
+
+        #Parseamos la respuesta y guardamos los datos para los logs
+        invoice_vals = self.parse_invoice_response(response)
+        return invoice_vals, response
+
+    def get_liquidation_by_number(self, pos_ar, number):
+
+        operation = 'consultarLiquidacionPorNroComprobante'
+        qry_data = {
+            'ConsultarLiquidacionPorNroComprobanteReq': {
+                'solicitud': {
+                    'puntoVenta': pos_ar,
+                    'tipoComprobante': 186,
+                    'nroComprobante': number, # TODO: Avoid hardcode
+                    'invoice': None
+                }
+            }
+        }
+
+        response = self.wslsp_query(qry_data, operation)
 
         #Parseamos la respuesta y guardamos los datos para los logs
         invoice_vals = self.parse_invoice_response(response)
