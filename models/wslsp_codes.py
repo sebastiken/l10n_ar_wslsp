@@ -37,6 +37,7 @@ class WSLSPCategoryCodes(models.Model):
     ranch_type = fields.Selection([('cattle','Cattle'),('pork','Pork')], 'Ranch Type')
     code = fields.Char('Code', required=True, size=8)
     name = fields.Char('Desc', required=True, size=64)
+    active = fields.Boolean('Active', default=True)
     wslsp_config_id = fields.Many2one('wslsp.config')
 
 class WSLSPCutCodes(models.Model):
