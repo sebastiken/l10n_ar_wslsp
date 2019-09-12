@@ -436,7 +436,8 @@ class AccountInvoice(models.Model):
         # Create and attach pdf invoice from AFIP
         pdf_data = invoice_vals.pop('pdf', False)
         if pdf_data:
-            invoice.attach_liquidation_report(pdf_data)
+            attachment = invoice.attach_liquidation_report(pdf_data)
+            self.send_autoliquidation_by_mail(attachment)
 
         # Add Vat Retention
         invoice._add_vat_retention(response)
@@ -457,6 +458,61 @@ class AccountInvoice(models.Model):
         invoice.signal_workflow('invoice_massive_open')
 
         return invoice
+
+    def _prepare_ctx_send_mail(self, template_id):
+        return {
+            'default_model': 'account.invoice',
+            'default_use_template': bool(template_id),
+            'default_template_id': template_id,
+            'default_composition_mode': 'comment',
+        }
+
+    @api.multi
+    def do_send_mail(self):
+        compose_model = self.env['mail.compose.message']
+        attachment_model = self.env['ir.attachment']
+
+        template = self.env.ref(
+                'l10n_ar_wslsp.mail_autoliquidation_template')
+        for invoice in self:
+            # send template only on customer invoice
+            if not invoice.is_lsp:
+                continue
+
+            composer = compose_model.create({
+                'model': 'account.invoice',
+                'res_id': invoice.id,
+                'template_id': template.id,
+                'composition_mode': 'comment',
+            })
+
+            template_values = composer.onchange_template_id(
+                template.id, 'comment', 'account.invoice', invoice.id)['value']
+            template_values['attachment_ids'] = [
+                (4, id) for id in template_values.get('attachment_ids', [])]
+            composer.write(template_values)
+            composer.send_mail()
+            invoice.write({'sent': True})
+        return True
+
+    @api.multi
+    def send_autoliquidation_by_mail(self, attachment):
+        try:
+#            mail_obj = self.env['mail.mail']
+#            template = self.env.ref(
+#                'l10n_ar_wslsp.mail_autoliquidation_template')
+#            values = template.generate_email(template.id, self.id)
+#            values['recipient_ids'] = [
+#                (4, pid) for pid in values.get('partner_ids', list())
+#            ]
+#            values['attachment_ids'] = [(6, 0, attachment.ids)]
+#            mail = mail_obj.create(values)
+#            mail.send()
+            self.do_send_mail()
+        except Exception as e:
+            return True
+#        self.write({'sent': True})
+        return True
 
     @api.multi
     def action_aut_cae(self):
@@ -491,7 +547,8 @@ class AccountInvoice(models.Model):
                 # Create and attach pdf invoice from AFIP
                 pdf_data = invoice_vals.pop('pdf', False)
                 if pdf_data:
-                    inv.attach_liquidation_report(pdf_data)
+                    attachment = inv.attach_liquidation_report(pdf_data)
+                    self.send_autoliquidation_by_mail(attachment)
                 inv.write(invoice_vals)
 
                 # Add Vat Retention
@@ -535,17 +592,17 @@ class AccountInvoice(models.Model):
                 invoice_to_validate.signal_workflow('invoice_open')
         return True
 
-    @api.one
+    @api.multi
     def attach_liquidation_report(self, pdf):
         #Decode PDF from base64
         #file_pdf = b64decode(pdf)
         data_attach = {
-			'name' : self.internal_number + '.pdf',
+			'name' : str(self.internal_number) + '.pdf',
 			'datas' : pdf,
-			'datas_fname' : self.internal_number + '.pdf',
+			'datas_fname' : str(self.internal_number) + '.pdf',
 			'res_model' : 'account.invoice',
 			'res_id' : self.id
 		}
         #paso el regisruttro en el modelo attachment
-        self.env['ir.attachment'].create(data_attach)
-        return True
+        attachment = self.env['ir.attachment'].create(data_attach)
+        return attachment
