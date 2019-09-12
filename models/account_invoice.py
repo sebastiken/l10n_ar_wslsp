@@ -469,41 +469,49 @@ class AccountInvoice(models.Model):
 
     @api.multi
     def do_send_mail(self):
-        self.write({'sent': True})
-        template_id = self.env.ref(
-                'l10n_ar_wslsp.mail_autoliquidation_template').id
-        compose_form_id = self.env.ref('mail.email_compose_message_wizard_form').id
+        compose_model = self.env['mail.compose.message']
+        attachment_model = self.env['ir.attachment']
 
-        ctx = dict(self.env.context)
-        ctx.update(self._prepare_ctx_send_mail(template_id))
+        template = self.env.ref(
+                'l10n_ar_wslsp.mail_autoliquidation_template')
+        for invoice in self:
+            # send template only on customer invoice
+            if not invoice.is_lsp:
+                continue
 
-        return {
-            'type': 'ir.actions.act_window',
-            'view_type': 'form',
-            'view_mode': 'form',
-            'res_model': 'mail.compose.message',
-            'views': [(compose_form_id, 'form')],
-            'view_id': compose_form_id,
-            'target': 'new',
-            'context': str(ctx),
-        }
+            composer = compose_model.create({
+                'model': 'account.invoice',
+                'res_id': invoice.id,
+                'template_id': template.id,
+                'composition_mode': 'comment',
+            })
+
+            template_values = composer.onchange_template_id(
+                template.id, 'comment', 'account.invoice', invoice.id)['value']
+            template_values['attachment_ids'] = [
+                (4, id) for id in template_values.get('attachment_ids', [])]
+            composer.write(template_values)
+            composer.send_mail()
+            invoice.write({'sent': True})
+        return True
 
     @api.multi
     def send_autoliquidation_by_mail(self, attachment):
         try:
-            mail_obj = self.env['mail.mail']
-            template = self.env.ref(
-                'l10n_ar_wslsp.mail_autoliquidation_template')
-            values = template.generate_email(template.id, self.id)
-            values['recipient_ids'] = [
-                (4, pid) for pid in values.get('partner_ids', list())
-            ]
-            values['attachment_ids'] = [(6, 0, attachment.ids)]
-            mail = mail_obj.create(values)
-            mail.send()
+#            mail_obj = self.env['mail.mail']
+#            template = self.env.ref(
+#                'l10n_ar_wslsp.mail_autoliquidation_template')
+#            values = template.generate_email(template.id, self.id)
+#            values['recipient_ids'] = [
+#                (4, pid) for pid in values.get('partner_ids', list())
+#            ]
+#            values['attachment_ids'] = [(6, 0, attachment.ids)]
+#            mail = mail_obj.create(values)
+#            mail.send()
+            self.do_send_mail()
         except Exception as e:
             return True
-        self.write({'sent': True})
+#        self.write({'sent': True})
         return True
 
     @api.multi
