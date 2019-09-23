@@ -227,6 +227,12 @@ msgid "Cancel Invoice"
 msgstr "Cancelar factura"
 
 #. module: l10n_ar_wslsp
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:475
+#, python-format
+msgid "Cannot send email"
+msgstr "No se pudo enviar el mail"
+
+#. module: l10n_ar_wslsp
 #: view:wslsp.config:l10n_ar_wslsp.view_wslsp_config_form
 #: field:wslsp.config,categories_ids:0
 msgid "Categories"
@@ -715,6 +721,12 @@ msgstr "Miembro Participe"
 #: field:wslsp.config,participant_character_ids:0
 msgid "Participant characters"
 msgstr "Caracter Participante"
+
+#. module: l10n_ar_wslsp
+#: code:addons/l10n_ar_wslsp/models/account_invoice.py:476
+#, python-format
+msgid "Partner of invoice has not email address"
+msgstr "Debe configurar el mail del proveedor"
 
 #. module: l10n_ar_wslsp
 #: view:account.invoice:l10n_ar_wslsp.view_invoice_wslsp_purchase_data_form

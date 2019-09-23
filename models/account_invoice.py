@@ -468,6 +468,16 @@ class AccountInvoice(models.Model):
         }
 
     @api.multi
+    def _check_partner_mail(self):
+
+        self.ensure_one()
+        if not self.partner_id.email:
+            raise except_orm(_("Cannot send email"),
+                             _("Partner of invoice has not email address"))
+
+        return self.partner_id.email
+
+    @api.multi
     def do_send_mail(self):
         compose_model = self.env['mail.compose.message']
         attachment_model = self.env['ir.attachment']
@@ -479,39 +489,44 @@ class AccountInvoice(models.Model):
             if not invoice.is_lsp:
                 continue
 
+            invoice._check_partner_mail()
+
+            attachment = attachment_model.search([
+                ('res_model', '=', 'account.invoice'),
+                ('res_id', '=', invoice.id),
+                ('name', 'like', invoice.internal_number)
+            ])
+
             composer = compose_model.create({
                 'model': 'account.invoice',
                 'res_id': invoice.id,
                 'template_id': template.id,
-                'composition_mode': 'comment',
+                'composition_mode': 'mass_mail',
+                'no_auto_thread': True,
             })
 
             template_values = composer.onchange_template_id(
                 template.id, 'comment', 'account.invoice', invoice.id)['value']
-            template_values['attachment_ids'] = [
-                (4, id) for id in template_values.get('attachment_ids', [])]
+            template_values['attachment_ids'] = [(6, 0, [attachment.id])]
+
             composer.write(template_values)
-            composer.send_mail()
+
+            context = self.env.context.copy()
+            context.update({'mail_create_nosubscribe': True})
+            composer.with_context(context).send_mail()
+
             invoice.write({'sent': True})
         return True
 
     @api.multi
     def send_autoliquidation_by_mail(self, attachment):
         try:
-#            mail_obj = self.env['mail.mail']
-#            template = self.env.ref(
-#                'l10n_ar_wslsp.mail_autoliquidation_template')
-#            values = template.generate_email(template.id, self.id)
-#            values['recipient_ids'] = [
-#                (4, pid) for pid in values.get('partner_ids', list())
-#            ]
-#            values['attachment_ids'] = [(6, 0, attachment.ids)]
-#            mail = mail_obj.create(values)
-#            mail.send()
             self.do_send_mail()
         except Exception as e:
-            return True
-#        self.write({'sent': True})
+            # We pass because we do not want to raise inside
+            # an AFIP request
+            pass
+
         return True
 
     @api.multi
